@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
+import StartupModal from "@/components/startup-modal";
 import {
   SidebarInset,
   SidebarProvider,
@@ -14,6 +15,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
+import type { ReactNode } from "react";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -26,9 +28,8 @@ export const metadata: Metadata = {
   description: "A platform for sharing and collaborating on study materials.",
 };
 
-// Mock data fetcher
-async function getNavData() {
-  // Simulate network delay if needed, but keeping it instant for now
+// Mock data fetcher (kept synchronous so layout remains a client component)
+function getNavData() {
   return [
     {
       title: "Dashboard",
@@ -52,18 +53,19 @@ async function getNavData() {
   ];
 }
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const navData = await getNavData();
+export default function RootLayout({ children }: { children: ReactNode }) {
+  const navData = getNavData();
+
+  // Modal open state is managed inside the client `StartupModal` component.
 
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Client startup modal rendered on every page load (blocks interaction) */}
+        <StartupModal />
+
         <SidebarProvider>
           <AppSidebar navMain={navData} />
           <SidebarInset>
