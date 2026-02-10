@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { parseGithubUrl, fetchRepoTree, buildSidebar } from "@/lib/utils";
 
 /**
  * StartupModal
@@ -12,10 +13,24 @@ import { Button } from "@/components/ui/button";
  * - As requested, clicking outside or pressing Escape will NOT close the modal.
  * - Background uses a mostly-opaque black overlay with a slight blur.
  *
- * Note: the "Fetch notes" button currently only closes the modal.
+ * This version:
+ * - Lets the user enter a GitHub repo URL.
+ * - Fetches the repo tree, builds a sidebar (using your utils), and stores
+ *   the resulting navigation in localStorage so the rest of the app can read it.
+ * - Shows status and basic errors; does not close the modal on failure.
  */
 export default function StartupModal() {
   const [open, setOpen] = useState<boolean>(true);
+  const [url, setUrl] = useState<string>(() => {
+    try {
+      return localStorage.getItem("study-doc:repo") || "";
+    } catch {
+      return "";
+    }
+  });
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -52,7 +67,92 @@ export default function StartupModal() {
     };
   }, [open]);
 
+  // Effect: if the user previously saved a sidebar, auto-close the modal immediately
+  useEffect(() => {
+    try {
+      const existing = localStorage.getItem("study-doc:sidebar");
+      if (existing && existing.length > 10) {
+        setOpen(false);
+      }
+    } catch {
+      // ignore localStorage errors
+    }
+  }, []);
+
   if (!open) return <></>;
+
+  async function handleFetch() {
+    setStatus(null);
+
+    if (!url || !url.trim()) {
+      setStatus("Please enter a GitHub repository URL.");
+      return;
+    }
+
+    setLoading(true);
+    setStatus("Parsing repository URL...");
+
+    try {
+      const { owner, repo } = parseGithubUrl(url.trim());
+      setStatus(`Fetching repository tree for ${owner}/${repo}...`);
+
+      const tree = await fetchRepoTree(owner, repo);
+      if (!Array.isArray(tree) || tree.length === 0) {
+        throw new Error("Repository tree is empty or could not be fetched.");
+      }
+
+      setStatus("Building sidebar from repository tree...");
+      const sidebar = buildSidebar(tree);
+
+      // Save results to localStorage so the app's sidebar can read it.
+      try {
+        localStorage.setItem("study-doc:repo", url.trim());
+        localStorage.setItem("study-doc:sidebar", JSON.stringify(sidebar));
+        localStorage.setItem("study-doc:repo_owner", owner);
+        localStorage.setItem("study-doc:repo_name", repo);
+
+        // Notify any client-side listeners (sidebar) that the nav has been updated.
+        // Using a CustomEvent so listeners can reactively refresh their state.
+        try {
+          window.dispatchEvent(new CustomEvent("study-doc:nav-updated"));
+        } catch {
+          // If dispatching fails for any reason, don't block user flow.
+        }
+      } catch (err) {
+        // localStorage may fail in some environments; surface an error but continue.
+        setStatus("Fetched sidebar but failed to save to localStorage.");
+        // still close so user can continue using the app
+        setOpen(false);
+        return;
+      }
+
+      setStatus("Fetched and saved sidebar successfully.");
+      // Give a moment for users to see the message then close
+      setTimeout(() => {
+        setOpen(false);
+      }, 400);
+    } catch (err: unknown) {
+      // Safely extract an error message from unknown error types
+      console.error(err);
+      let message = "Failed to fetch repository. Check the URL and try again.";
+
+      // Narrow the unknown error into known shapes without using `any`.
+      type HasMessage = { message?: unknown };
+
+      if (typeof err === "string") {
+        message = err;
+      } else if (err && typeof err === "object" && "message" in err) {
+        const maybeMsg = (err as HasMessage).message;
+        if (typeof maybeMsg === "string") {
+          message = maybeMsg;
+        }
+      }
+
+      setStatus(message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div
@@ -90,25 +190,57 @@ export default function StartupModal() {
       >
         <h2 className="mb-1 text-lg font-semibold">Welcome</h2>
         <p className="mb-4 text-sm text-muted-foreground">
-          What is the URL for the website?
+          To get started, enter the GitHub repository URL that contains your
+          notes (e.g. https://github.com/username/repo).
         </p>
 
         <Input
+          ref={inputRef}
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
           autoFocus
           placeholder="https://github.com/username/notes"
           aria-label="Website URL"
           className="mb-4"
         />
 
-        <div className="flex justify-end">
+        <div className="mb-3 text-sm min-h-[1.25rem]">
+          {loading ? (
+            <span className="text-muted-foreground">
+              Working... {status || ""}
+            </span>
+          ) : status ? (
+            <span className="text-muted-foreground">{status}</span>
+          ) : (
+            <span className="text-muted-foreground">No repository loaded.</span>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2">
           <Button
-            variant="default"
+            variant="secondary"
             onClick={() => {
-              // For now, just close the modal. Fetching will be added later.
-              setOpen(false);
+              // allow user to close modal even if they don't want to fetch
+              // but we preserve previously saved sidebar if present.
+              try {
+                const existing = localStorage.getItem("study-doc:sidebar");
+                if (existing && existing.length > 10) {
+                  setOpen(false);
+                  return;
+                }
+              } catch {
+                // ignore
+              }
+              // if nothing exists, keep modal open
+              setStatus(
+                "No sidebar saved yet. Please fetch notes or provide a repo.",
+              );
             }}
           >
-            Fetch notes
+            Keep open
+          </Button>
+          <Button variant="default" onClick={handleFetch} disabled={loading}>
+            {loading ? "Fetching..." : "Fetch notes"}
           </Button>
         </div>
       </div>

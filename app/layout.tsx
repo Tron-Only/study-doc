@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AppSidebar } from "@/components/app-sidebar";
+import AppSidebarClient from "@/components/app-sidebar-client";
 import StartupModal from "@/components/startup-modal";
 import {
   SidebarInset,
@@ -28,34 +28,7 @@ export const metadata: Metadata = {
   description: "A platform for sharing and collaborating on study materials.",
 };
 
-// Mock data fetcher (kept synchronous so layout remains a client component)
-function getNavData() {
-  return [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      items: [
-        {
-          title: "Overview",
-          url: "/dashboard",
-        },
-        {
-          title: "Settings",
-          url: "/dashboard/settings",
-        },
-      ],
-    },
-    {
-      title: "Projects",
-      url: "/projects",
-      items: [],
-    },
-  ];
-}
-
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const navData = getNavData();
-
   // Modal open state is managed inside the client `StartupModal` component.
 
   return (
@@ -67,7 +40,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <StartupModal />
 
         <SidebarProvider>
-          <AppSidebar navMain={navData} />
+          <AppSidebarClient />
           <SidebarInset>
             <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
               <SidebarTrigger className="-ml-1" />
