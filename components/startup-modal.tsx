@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { parseGithubUrl, fetchRepoTree, buildSidebar } from "@/lib/utils";
@@ -8,7 +9,8 @@ import { parseGithubUrl, fetchRepoTree, buildSidebar } from "@/lib/utils";
 /**
  * StartupModal
  *
- * - Shows immediately on mount.
+ * - Only shows on the main page ("/").
+ * - Does NOT auto-close on refresh - user must choose an action.
  * - Blocks all interaction with the page until the user clicks the button.
  * - As requested, clicking outside or pressing Escape will NOT close the modal.
  * - Background uses a mostly-opaque black overlay with a slight blur.
@@ -17,9 +19,11 @@ import { parseGithubUrl, fetchRepoTree, buildSidebar } from "@/lib/utils";
  * - Lets the user enter a GitHub repo URL.
  * - Fetches the repo tree, builds a sidebar (using your utils), and stores
  *   the resulting navigation in localStorage so the rest of the app can read it.
+ * - "Use Notes" button is enabled only when notes exist in localStorage.
  * - Shows status and basic errors; does not close the modal on failure.
  */
 export default function StartupModal() {
+  const pathname = usePathname();
   const [open, setOpen] = useState<boolean>(true);
   const [url, setUrl] = useState<string>(() => {
     try {
@@ -30,7 +34,18 @@ export default function StartupModal() {
   });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [hasExistingNotes, setHasExistingNotes] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Check if notes exist in localStorage
+  useEffect(() => {
+    try {
+      const existing = localStorage.getItem("study-doc:sidebar");
+      setHasExistingNotes(!!(existing && existing.length > 10));
+    } catch {
+      setHasExistingNotes(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -67,19 +82,8 @@ export default function StartupModal() {
     };
   }, [open]);
 
-  // Effect: if the user previously saved a sidebar, auto-close the modal immediately
-  useEffect(() => {
-    try {
-      const existing = localStorage.getItem("study-doc:sidebar");
-      if (existing && existing.length > 10) {
-        setOpen(false);
-      }
-    } catch {
-      // ignore localStorage errors
-    }
-  }, []);
-
-  if (!open) return <></>;
+  // Only show modal on the main page
+  if (!open || pathname !== "/") return <></>;
 
   async function handleFetch() {
     setStatus(null);
@@ -118,7 +122,7 @@ export default function StartupModal() {
         } catch {
           // If dispatching fails for any reason, don't block user flow.
         }
-      } catch (err) {
+      } catch {
         // localStorage may fail in some environments; surface an error but continue.
         setStatus("Fetched sidebar but failed to save to localStorage.");
         // still close so user can continue using the app
@@ -211,33 +215,24 @@ export default function StartupModal() {
             </span>
           ) : status ? (
             <span className="text-muted-foreground">{status}</span>
+          ) : hasExistingNotes ? (
+            <span className="text-muted-foreground">Notes available. Click &quot;Use Notes&quot; to continue or fetch new notes.</span>
           ) : (
-            <span className="text-muted-foreground">No repository loaded.</span>
+            <span className="text-muted-foreground">No notes found. Enter a GitHub repo URL to fetch notes.</span>
           )}
         </div>
 
         <div className="flex justify-end gap-2">
           <Button
             variant="secondary"
+            disabled={!hasExistingNotes}
             onClick={() => {
-              // allow user to close modal even if they don't want to fetch
-              // but we preserve previously saved sidebar if present.
-              try {
-                const existing = localStorage.getItem("study-doc:sidebar");
-                if (existing && existing.length > 10) {
-                  setOpen(false);
-                  return;
-                }
-              } catch {
-                // ignore
+              if (hasExistingNotes) {
+                setOpen(false);
               }
-              // if nothing exists, keep modal open
-              setStatus(
-                "No sidebar saved yet. Please fetch notes or provide a repo.",
-              );
             }}
           >
-            Keep open
+            Use Notes
           </Button>
           <Button variant="default" onClick={handleFetch} disabled={loading}>
             {loading ? "Fetching..." : "Fetch notes"}

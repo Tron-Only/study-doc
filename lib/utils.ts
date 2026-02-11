@@ -208,9 +208,10 @@ export async function fetchMarkdown(
 
   // Encode each path segment but preserve forward slashes so GitHub API
   // receives a path like "docs/intro.md" rather than "docs%2Fintro.md".
+  // First decode any existing encoding to prevent double-encoding.
   const encodedPath = path
     .split("/")
-    .map((segment) => encodeURIComponent(segment))
+    .map((segment) => encodeURIComponent(decodeURIComponent(segment)))
     .join("/");
 
   const url = `https://api.github.com/repos/${encOwner}/${encRepo}/contents/${encodedPath}${params}`;

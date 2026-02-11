@@ -2,9 +2,9 @@ import React from "react";
 import MarkdownViewer from "@/components/markdown-viewer";
 
 type Props = {
-  params?: {
+  params: Promise<{
     slug?: string[];
-  };
+  }>;
 };
 
 /**
@@ -20,8 +20,9 @@ type Props = {
  *
  * If no slug is provided, we render a small instructional message.
  */
-export default function NotesRoute({ params }: Props) {
-  const slugArray = params?.slug;
+export default async function NotesRoute({ params }: Props) {
+  const resolvedParams = await params;
+  const slugArray = resolvedParams?.slug;
 
   if (!slugArray || slugArray.length === 0) {
     return (

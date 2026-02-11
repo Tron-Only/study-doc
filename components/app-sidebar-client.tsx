@@ -283,6 +283,7 @@ export default function AppSidebarClient({
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navMain]);
 
   // Refresh handler (reads persisted sidebar)
