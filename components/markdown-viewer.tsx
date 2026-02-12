@@ -5,6 +5,211 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import mermaid from "mermaid";
 import { fetchMarkdown } from "@/lib/utils";
+import { AlertTriangle, CheckCircle, HelpCircle, Info, Lightbulb, MessageSquare, XCircle, Flame, BookOpen, Quote, Bug } from "lucide-react";
+
+// Obsidian callout types and their configuration
+const CALLOUT_TYPES: Record<string, { icon: React.ElementType; color: string; bgColor: string; borderColor: string }> = {
+  note: { icon: Info, color: "#3b82f6", bgColor: "rgba(59, 130, 246, 0.1)", borderColor: "#3b82f6" },
+  abstract: { icon: BookOpen, color: "#06b6d4", bgColor: "rgba(6, 182, 212, 0.1)", borderColor: "#06b6d4" },
+  summary: { icon: BookOpen, color: "#06b6d4", bgColor: "rgba(6, 182, 212, 0.1)", borderColor: "#06b6d4" },
+  tldr: { icon: BookOpen, color: "#06b6d4", bgColor: "rgba(6, 182, 212, 0.1)", borderColor: "#06b6d4" },
+  info: { icon: Info, color: "#3b82f6", bgColor: "rgba(59, 130, 246, 0.1)", borderColor: "#3b82f6" },
+  todo: { icon: CheckCircle, color: "#3b82f6", bgColor: "rgba(59, 130, 246, 0.1)", borderColor: "#3b82f6" },
+  tip: { icon: Lightbulb, color: "#10b981", bgColor: "rgba(16, 185, 129, 0.1)", borderColor: "#10b981" },
+  hint: { icon: Lightbulb, color: "#10b981", bgColor: "rgba(16, 185, 129, 0.1)", borderColor: "#10b981" },
+  important: { icon: Lightbulb, color: "#10b981", bgColor: "rgba(16, 185, 129, 0.1)", borderColor: "#10b981" },
+  success: { icon: CheckCircle, color: "#10b981", bgColor: "rgba(16, 185, 129, 0.1)", borderColor: "#10b981" },
+  check: { icon: CheckCircle, color: "#10b981", bgColor: "rgba(16, 185, 129, 0.1)", borderColor: "#10b981" },
+  done: { icon: CheckCircle, color: "#10b981", bgColor: "rgba(16, 185, 129, 0.1)", borderColor: "#10b981" },
+  question: { icon: HelpCircle, color: "#eab308", bgColor: "rgba(234, 179, 8, 0.1)", borderColor: "#eab308" },
+  help: { icon: HelpCircle, color: "#eab308", bgColor: "rgba(234, 179, 8, 0.1)", borderColor: "#eab308" },
+  faq: { icon: HelpCircle, color: "#eab308", bgColor: "rgba(234, 179, 8, 0.1)", borderColor: "#eab308" },
+  warning: { icon: AlertTriangle, color: "#f59e0b", bgColor: "rgba(245, 158, 11, 0.1)", borderColor: "#f59e0b" },
+  caution: { icon: AlertTriangle, color: "#f59e0b", bgColor: "rgba(245, 158, 11, 0.1)", borderColor: "#f59e0b" },
+  attention: { icon: AlertTriangle, color: "#f59e0b", bgColor: "rgba(245, 158, 11, 0.1)", borderColor: "#f59e0b" },
+  failure: { icon: XCircle, color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.1)", borderColor: "#ef4444" },
+  fail: { icon: XCircle, color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.1)", borderColor: "#ef4444" },
+  missing: { icon: XCircle, color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.1)", borderColor: "#ef4444" },
+  danger: { icon: Flame, color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.1)", borderColor: "#ef4444" },
+  error: { icon: XCircle, color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.1)", borderColor: "#ef4444" },
+  bug: { icon: Bug, color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.1)", borderColor: "#ef4444" },
+  example: { icon: MessageSquare, color: "#a855f7", bgColor: "rgba(168, 85, 247, 0.1)", borderColor: "#a855f7" },
+  quote: { icon: Quote, color: "#6b7280", bgColor: "rgba(107, 114, 128, 0.1)", borderColor: "#6b7280" },
+  cite: { icon: Quote, color: "#6b7280", bgColor: "rgba(107, 114, 128, 0.1)", borderColor: "#6b7280" },
+};
+
+// Parse callout from blockquote content
+function parseCallout(children: React.ReactNode): { type: string; title: string | null; isCallout: boolean; collapsible: boolean; collapsed: boolean } {
+  // First try to extract text from the first paragraph (react-markdown wraps blockquote content in <p>)
+  const text = extractFirstParagraphText(children);
+  
+  // Trim leading/trailing whitespace to handle newlines
+  const trimmedText = text.trim();
+  
+  // Match Obsidian callout syntax at the start of content
+  // Supports: [!TYPE], [!TYPE] Title, [!TYPE]- Title (collapsed), [!TYPE]+ Title (expanded)
+  const match = trimmedText.match(/^\[!\s*(\w+)\s*\]([+-]?)\s*(.*)/);
+  
+  if (match) {
+    const type = match[1].toLowerCase();
+    const collapsibleIndicator = match[2];
+    const title = match[3].trim() || null;
+    const isCallout = type in CALLOUT_TYPES;
+    
+    const collapsible = collapsibleIndicator === '+' || collapsibleIndicator === '-';
+    const collapsed = collapsibleIndicator === '-';
+    
+    return { type, title, isCallout, collapsible, collapsed };
+  }
+  
+  return { type: "", title: null, isCallout: false, collapsible: false, collapsed: false };
+}
+
+// Extract text from React node for parsing
+function extractTextFromReactNode(node: React.ReactNode): string {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractTextFromReactNode).join("");
+  if (React.isValidElement(node)) {
+    const element = node as React.ReactElement<{ children?: React.ReactNode }>;
+    if (element.props.children) {
+      return extractTextFromReactNode(element.props.children);
+    }
+  }
+  return "";
+}
+
+// Check if first child is a paragraph and extract its text
+function extractFirstParagraphText(children: React.ReactNode): string {
+  if (Array.isArray(children) && children.length > 0) {
+    const firstChild = children[0];
+    if (React.isValidElement(firstChild)) {
+      const element = firstChild as React.ReactElement<{ children?: React.ReactNode }>;
+      // Check if it's a paragraph element
+      if (element.type === 'p' && element.props.children) {
+        return extractTextFromReactNode(element.props.children);
+      }
+    }
+  }
+  return extractTextFromReactNode(children);
+}
+
+// Remove the callout marker from the first paragraph
+function removeCalloutMarkerFromText(text: string, type: string): string {
+  const pattern = new RegExp(`^\\[!\\s*${type}\\s*\\][+-]?\\s*`);
+  return text.replace(pattern, "").trim();
+}
+
+function removeCalloutMarker(children: React.ReactNode, type: string): React.ReactNode {
+  if (!Array.isArray(children)) return children;
+  
+  // Find the paragraph element in the array (might not be at index 0)
+  const paraIndex = children.findIndex(child => 
+    React.isValidElement(child) && child.type === 'p'
+  );
+  
+  if (paraIndex === -1) return children;
+  
+  const paraElement = children[paraIndex] as React.ReactElement<{ children?: React.ReactNode }>;
+  const paraChildren = paraElement.props.children;
+  
+  if (!paraChildren) return children;
+  
+  let cleanedContent: React.ReactNode;
+  
+  // Handle string content in paragraph
+  if (typeof paraChildren === "string") {
+    const cleaned = removeCalloutMarkerFromText(paraChildren, type);
+    if (!cleaned) {
+      // Remove the paragraph entirely if nothing left
+      return [...children.slice(0, paraIndex), ...children.slice(paraIndex + 1)];
+    }
+    cleanedContent = cleaned;
+  } else if (Array.isArray(paraChildren)) {
+    // Handle array content in paragraph
+    const firstText = paraChildren[0];
+    if (typeof firstText === "string") {
+      const cleaned = removeCalloutMarkerFromText(firstText, type);
+      const newParaChildren = cleaned 
+        ? [cleaned, ...paraChildren.slice(1)]
+        : paraChildren.slice(1);
+      
+      if (newParaChildren.length === 0) {
+        // Remove the paragraph entirely if nothing left
+        return [...children.slice(0, paraIndex), ...children.slice(paraIndex + 1)];
+      }
+      cleanedContent = newParaChildren;
+    } else {
+      return children;
+    }
+  } else {
+    return children;
+  }
+  
+  // Reconstruct the children array with the cleaned paragraph
+  const newPara = React.createElement('p', { key: paraElement.key || 'callout-content' }, cleanedContent);
+  return [
+    ...children.slice(0, paraIndex),
+    newPara,
+    ...children.slice(paraIndex + 1)
+  ];
+}
+
+// Callout component
+function Callout({ type, title, children, collapsible, collapsed: initialCollapsed }: { 
+  type: string; 
+  title: string | null; 
+  children: React.ReactNode;
+  collapsible: boolean;
+  collapsed: boolean;
+}) {
+  const config = CALLOUT_TYPES[type] || CALLOUT_TYPES.note;
+  const Icon = config.icon;
+  const displayTitle = title || type.charAt(0).toUpperCase() + type.slice(1);
+  const [isCollapsed, setIsCollapsed] = useState(initialCollapsed);
+  
+  const content = removeCalloutMarker(children, type);
+  
+  return (
+    <div 
+      className="callout"
+      style={{
+        backgroundColor: config.bgColor,
+        borderLeft: `4px solid ${config.borderColor}`,
+        borderRadius: "6px",
+        padding: "12px 16px",
+        margin: "16px 0",
+      }}
+    >
+      <div 
+        className="callout-title"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          color: config.color,
+          fontWeight: 600,
+          marginBottom: isCollapsed ? 0 : "8px",
+          cursor: collapsible ? "pointer" : "default",
+        }}
+        onClick={collapsible ? () => setIsCollapsed(!isCollapsed) : undefined}
+      >
+        <Icon size={18} />
+        <span>{displayTitle}</span>
+        {collapsible && (
+          <span style={{ marginLeft: "auto" }}>
+            {isCollapsed ? "▶" : "▼"}
+          </span>
+        )}
+      </div>
+      {(!collapsible || !isCollapsed) && (
+        <div className="callout-content" style={{ color: "var(--foreground)" }}>
+          {content}
+        </div>
+      )}
+    </div>
+  );
+}
 
 type Props = {
   /**
@@ -113,6 +318,8 @@ export default function MarkdownViewer({
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const resolvedOwnerRef = useRef<string | null>(null);
+  const resolvedRepoRef = useRef<string | null>(null);
 
   useEffect(() => {
     const filePath = path ?? slug;
@@ -155,6 +362,10 @@ export default function MarkdownViewer({
 
         // Fetch raw markdown text using the project utility
         const md = await fetchMarkdown(o, r, filePath);
+        // Store resolved owner/repo for image resolution
+        resolvedOwnerRef.current = o;
+        resolvedRepoRef.current = r;
+        
         if (!mounted) return;
         setContent(md);
       } catch (err) {
@@ -196,26 +407,121 @@ export default function MarkdownViewer({
                 inline?: boolean;
                 className?: string;
                 children?: React.ReactNode;
+                node?: any;
               }) => {
                 const { inline, className: codeClassName, children } = props;
+                const codeText = String(children || "").replace(/\n$/, "");
                 
-                if (inline) {
-                  return <code className={codeClassName}>{children}</code>;
+                // Check if this is inline code (single backticks) or block code (triple backticks)
+                // Inline code: inline === true OR no newlines in content OR no language class
+                const isInline = inline === true || (!codeText.includes("\n") && !codeClassName);
+                
+                if (isInline) {
+                  return (
+                    <code 
+                      className="inline-code"
+                      style={{
+                        padding: '0.2em 0.4em',
+                        margin: 0,
+                        fontSize: '85%',
+                        backgroundColor: 'var(--muted)',
+                        borderRadius: '3px',
+                        fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+                        display: 'inline',
+                      }}
+                    >
+                      {children}
+                    </code>
+                  );
                 }
 
                 // Check if this is a mermaid code block
                 const language = codeClassName?.replace("language-", "") || "";
-                const code = String(children).replace(/\n$/, "");
                 
                 if (language === "mermaid") {
-                  return <MermaidDiagram code={code} />;
+                  return <MermaidDiagram code={codeText} />;
                 }
 
-                // Regular code block
+                // Regular code block (triple backticks)
                 return (
                   <pre className={codeClassName ? codeClassName : "bg-muted p-2 rounded"}>
                     <code>{children}</code>
                   </pre>
+                );
+              },
+              // Handle images - resolve relative paths to GitHub raw URLs
+              img: (props: React.ComponentPropsWithoutRef<"img">) => {
+                const { src, alt, ...rest } = props;
+                const srcStr = src as string;
+                
+                // If src is already absolute or data URI, use as-is
+                if (!srcStr || typeof srcStr !== 'string' || srcStr.startsWith('http://') || srcStr.startsWith('https://') || srcStr.startsWith('data:') || srcStr.startsWith('//')) {
+                  return <img {...props} />;
+                }
+                
+                // Get the directory of the current markdown file
+                const filePath = path ?? slug ?? '';
+                const fileDir = filePath.includes('/') 
+                  ? filePath.substring(0, filePath.lastIndexOf('/')) 
+                  : '';
+                
+                // Resolve the relative path
+                let resolvedPath = srcStr;
+                if (srcStr.startsWith('../')) {
+                  // Go up one directory from the file's location
+                  const parentDir = fileDir.includes('/') 
+                    ? fileDir.substring(0, fileDir.lastIndexOf('/')) 
+                    : '';
+                  resolvedPath = parentDir + '/' + srcStr.substring(3);
+                } else if (srcStr.startsWith('./')) {
+                  // Relative to current directory
+                  resolvedPath = fileDir + '/' + srcStr.substring(2);
+                } else if (fileDir) {
+                  // No prefix - relative to current directory
+                  resolvedPath = fileDir + '/' + srcStr;
+                }
+                
+                // Remove leading slash if present
+                resolvedPath = resolvedPath.replace(/^\//, '');
+                
+                // Build the GitHub raw URL (always use main branch)
+                const owner = resolvedOwnerRef.current;
+                const repo = resolvedRepoRef.current;
+                if (!owner || !repo) {
+                  return <img {...props} />;
+                }
+                
+                const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/${resolvedPath}`;
+                
+                return <img src={rawUrl} alt={alt} {...rest} style={{ maxWidth: '100%', height: 'auto' }} />;
+              },
+              // Handle blockquotes - check for callouts
+              blockquote: ({ children }: { children?: React.ReactNode }) => {
+                const { type, title, isCallout, collapsible, collapsed } = parseCallout(children);
+                
+                if (isCallout) {
+                  return (
+                    <Callout 
+                      type={type} 
+                      title={title} 
+                      collapsible={collapsible}
+                      collapsed={collapsed}
+                    >
+                      {children}
+                    </Callout>
+                  );
+                }
+                
+                // Regular blockquote
+                return (
+                  <blockquote style={{
+                    margin: "0 0 16px 0",
+                    padding: "0 1em",
+                    color: "var(--muted-foreground)",
+                    borderLeft: "0.25em solid var(--border)",
+                  }}>
+                    {children}
+                  </blockquote>
                 );
               },
             }}
@@ -317,6 +623,7 @@ export default function MarkdownViewer({
           background-color: var(--muted);
           border-radius: 3px;
           font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+          display: inline;
         }
         
         .markdown-body pre {

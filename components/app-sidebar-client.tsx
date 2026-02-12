@@ -1,20 +1,18 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { GalleryVerticalEnd, ChevronRight } from "lucide-react";
+import { ChevronRight, Folder, FileText, PanelLeftClose, PanelLeft } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -23,6 +21,7 @@ import {
 } from "@/components/ui/collapsible";
 import type { NavItem as UtilsNavItem, GitTreeEntry } from "@/lib/utils";
 import { fetchRepoTree, buildSidebar } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type NavItem = UtilsNavItem;
 
@@ -60,6 +59,23 @@ function itemIsActive(item: NavItem, pathname: string | null): boolean {
   return false;
 }
 
+/** Skeleton loading component */
+function SidebarSkeleton() {
+  // Fixed widths to avoid hydration mismatch
+  const skeletonWidths = ['65%', '75%', '70%', '73%', '68%', '82%', '72%', '88%'];
+  
+  return (
+    <div className="sidebar-skeleton">
+      {[...Array(8)].map((_, i) => (
+        <div key={i} className="skeleton-item" style={{ animationDelay: `${i * 0.1}s` }}>
+          <div className="skeleton-icon" />
+          <div className="skeleton-text" style={{ width: skeletonWidths[i] }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** Render nested items recursively with collapsible dropdowns. */
 function renderNestedItems(
   items: NavItem[] | undefined,
@@ -72,61 +88,26 @@ function renderNestedItems(
     const key = `${item.url || item.title}-${depth}-${item.title}`;
     const href = toHref(item.url);
     const active = itemIsActive(item, pathname);
+    const isFolder = item.items && item.items.length > 0;
 
-    if (item.items && item.items.length > 0) {
+    if (isFolder) {
       return (
         <Collapsible
           key={key}
           defaultOpen={active}
-          className="group/collapsible"
+          className="sidebar-folder"
         >
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton className="w-full justify-between">
-                <span className="break-words font-medium leading-tight">{item.title}</span>
-                <ChevronRight className="ml-2 h-4 w-4 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-90" />
-              </SidebarMenuButton>
+              <button className="sidebar-folder-trigger">
+                <Folder className="sidebar-icon" size={16} />
+                <span className="sidebar-item-text">{item.title}</span>
+                <ChevronRight className="sidebar-chevron" size={14} />
+              </button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <SidebarMenuSub
-                className={depth === 0 ? "ml-0 border-l-0 px-1.5" : ""}
-              >
-                {item.items.map((sub) => {
-                  const subKey = `${sub.url || sub.title}-${depth + 1}-${sub.title}`;
-                  const subHref = toHref(sub.url);
-                  const subActive = itemIsActive(sub, pathname);
-
-                  return (
-                    <SidebarMenuSubItem key={subKey}>
-                      {sub.items && sub.items.length > 0 ? (
-                        <Collapsible
-                          defaultOpen={subActive}
-                          className="group/collapsible"
-                        >
-                          <CollapsibleTrigger asChild>
-                            <SidebarMenuSubButton isActive={subActive} className="justify-between">
-                              <span className="break-words leading-tight">{sub.title}</span>
-                              <ChevronRight className="ml-2 h-4 w-4 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                            </SidebarMenuSubButton>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <SidebarMenuSub className="ml-2 border-l-0 px-1.5">
-                              {renderNestedItems(sub.items, pathname, depth + 2)}
-                            </SidebarMenuSub>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ) : subHref ? (
-                        <SidebarMenuSubButton asChild isActive={subActive}>
-                          <a href={subHref}>{sub.title}</a>
-                        </SidebarMenuSubButton>
-                      ) : (
-                        <div className="text-sidebar-foreground flex min-h-7 min-w-0 -translate-x-px items-start gap-2 rounded-md px-2 py-1 text-sm opacity-60 [&>svg]:mt-0.5 [&>svg]:size-4 [&>svg]:shrink-0">
-                          <span className="break-words leading-tight">{sub.title}</span>
-                        </div>
-                      )}
-                    </SidebarMenuSubItem>
-                  );
-                })}
+              <SidebarMenuSub className={depth === 0 ? "sidebar-sub-root" : "sidebar-sub-nested"}>
+                {renderNestedItems(item.items, pathname, depth + 1)}
               </SidebarMenuSub>
             </CollapsibleContent>
           </SidebarMenuItem>
@@ -135,20 +116,20 @@ function renderNestedItems(
     }
 
     return (
-        <SidebarMenuItem key={key}>
+      <SidebarMenuItem key={key}>
         {href ? (
-          <SidebarMenuButton asChild>
-            <a
-              href={href}
-              className="font-medium"
-              aria-current={active ? "page" : undefined}
-            >
-              {item.title}
-            </a>
-          </SidebarMenuButton>
+          <a
+            href={href}
+            className={`sidebar-file-link ${active ? "active" : ""}`}
+            aria-current={active ? "page" : undefined}
+          >
+            <FileText className="sidebar-icon" size={16} />
+            <span className="sidebar-item-text">{item.title}</span>
+          </a>
         ) : (
-          <div className="peer/menu-button flex w-full min-h-8 items-start gap-2 rounded-md p-2 text-left text-sm opacity-60 [&>span]:break-words [&>svg]:mt-0.5 [&>svg]:size-4 [&>svg]:shrink-0">
-            <span className="break-words font-medium leading-tight">{item.title}</span>
+          <div className="sidebar-folder-label">
+            <Folder className="sidebar-icon" size={16} />
+            <span className="sidebar-item-text">{item.title}</span>
           </div>
         )}
       </SidebarMenuItem>
@@ -156,11 +137,45 @@ function renderNestedItems(
   });
 }
 
+/** Collapse button component */
+function SidebarCollapseButton() {
+  const { toggleSidebar } = useSidebar();
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleSidebar}
+      className="sidebar-collapse-button"
+      aria-label="Toggle sidebar"
+    >
+      <PanelLeftClose size={18} />
+    </Button>
+  );
+}
+
+/** Floating trigger when sidebar is collapsed */
+function FloatingTrigger() {
+  const { state, toggleSidebar } = useSidebar();
+
+  if (state === "expanded") return null;
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleSidebar}
+      className="floating-sidebar-trigger"
+      aria-label="Open sidebar"
+    >
+      <PanelLeft size={20} />
+    </Button>
+  );
+}
+
 /**
  * Client-side AppSidebar that loads navigation from localStorage.
  * Falls back to navMain prop (from server) or an empty state.
- *
- * - Emits informative console logs to aid debugging.
  */
 export default function AppSidebarClient({
   navMain,
@@ -168,167 +183,114 @@ export default function AppSidebarClient({
 }: AppSidebarClientProps) {
   const pathname = usePathname();
   const [nav, setNav] = useState<NavItem[] | undefined>(() => {
-    // If initial prop provided, use it immediately to avoid flashing empty UI.
     if (navMain && Array.isArray(navMain) && navMain.length > 0) {
       return navMain;
     }
     return undefined;
   });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load persisted nav from localStorage if we don't already have nav from props.
-  // If none is found, attempt to fetch the repo tree using saved repo owner/name
-  // and build the sidebar dynamically (persisting it afterward).
+  // Load persisted nav from localStorage
   useEffect(() => {
-    if (nav && nav.length > 0) return;
+    if (nav && nav.length > 0) {
+      setIsLoading(false);
+      return;
+    }
 
     let cancelled = false;
 
     (async () => {
       // 1) Try to load persisted sidebar from localStorage
       try {
-        console.debug(
-          "AppSidebarClient: attempting to read persisted sidebar from localStorage",
-        );
         const raw = localStorage.getItem("study-doc:sidebar");
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            // defer to avoid synchronous setState inside effect
             setTimeout(() => {
               if (cancelled) return;
-              console.info(
-                "AppSidebarClient: loaded persisted sidebar",
-                parsed,
-              );
               setNav(parsed as NavItem[]);
+              setIsLoading(false);
             }, 0);
             return;
           }
-        } else {
-          console.debug(
-            "AppSidebarClient: no persisted sidebar found in localStorage",
-          );
         }
       } catch (e) {
         console.warn("AppSidebarClient: error reading persisted sidebar", e);
       }
 
-      // 2) If no persisted sidebar, try to fetch the repo tree using saved owner/repo
+      // 2) If no persisted sidebar, try to fetch the repo tree
       try {
         const owner = localStorage.getItem("study-doc:repo_owner");
         const repo = localStorage.getItem("study-doc:repo_name");
         if (owner && repo) {
-          console.debug(
-            "AppSidebarClient: fetching repo tree for",
-            owner,
-            repo,
-          );
           try {
             const tree = await fetchRepoTree(owner, repo);
             if (Array.isArray(tree) && tree.length > 0) {
               const built = buildSidebar(tree as GitTreeEntry[]);
-              // persist the built sidebar and set state (deferred)
               try {
-                localStorage.setItem(
-                  "study-doc:sidebar",
-                  JSON.stringify(built),
-                );
+                localStorage.setItem("study-doc:sidebar", JSON.stringify(built));
               } catch {
                 // ignore localStorage write errors
               }
               setTimeout(() => {
                 if (cancelled) return;
-                console.info(
-                  "AppSidebarClient: built sidebar from repo",
-                  owner,
-                  repo,
-                );
                 setNav(built);
+                setIsLoading(false);
               }, 0);
               return;
             }
           } catch (fetchErr) {
             console.warn("AppSidebarClient: fetchRepoTree failed", fetchErr);
           }
-        } else {
-          console.debug(
-            "AppSidebarClient: no repo_owner/repo_name in localStorage to fetch from",
-          );
         }
       } catch (e) {
-        console.warn(
-          "AppSidebarClient: error while attempting repo fetch/build",
-          e,
-        );
+        console.warn("AppSidebarClient: error while attempting repo fetch/build", e);
       }
 
-      // 3) Fall back to the server-provided navMain or empty nav (deferred)
+      // 3) Fall back to navMain or empty nav
       setTimeout(() => {
         if (cancelled) return;
         if (navMain && Array.isArray(navMain) && navMain.length > 0) {
-          console.debug(
-            "AppSidebarClient: using navMain provided from server",
-            navMain,
-          );
           setNav(navMain);
         } else {
-          console.debug(
-            "AppSidebarClient: no server navMain; setting empty nav",
-          );
           setNav([]);
         }
+        setIsLoading(false);
       }, 0);
     })();
 
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navMain]);
+  }, [navMain, nav]);
 
   // Refresh handler (reads persisted sidebar)
   const refreshFromStorage = useCallback(() => {
     try {
       const raw = localStorage.getItem("study-doc:sidebar");
       if (!raw) {
-        console.debug(
-          "AppSidebarClient.refreshFromStorage: no persisted sidebar",
-        );
         setNav([]);
-        // restore server menu if present
-      return;
-    }
-    const parsed = JSON.parse(raw);
+        return;
+      }
+      const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        console.info(
-          "AppSidebarClient.refreshFromStorage: updated nav",
-          parsed,
-        );
         setNav(parsed as NavItem[]);
       } else {
         setNav([]);
       }
     } catch (err) {
-      console.warn(
-        "AppSidebarClient.refreshFromStorage: failed to parse persisted sidebar",
-        err,
-      );
-      // ignore parse errors
+      console.warn("AppSidebarClient.refreshFromStorage: failed to parse persisted sidebar", err);
     }
   }, []);
 
-  // Listen to custom event and storage events to update nav reactively.
+  // Listen to custom event and storage events
   useEffect(() => {
     const onNavUpdated = () => {
-      console.info(
-        "AppSidebarClient: custom event 'study-doc:nav-updated' received — refreshing sidebar from storage",
-      );
       refreshFromStorage();
     };
 
     const onStorage = (e: StorageEvent) => {
       const key = e.key;
-      // Keys that should trigger a refresh of the sidebar
       const triggerKeys = new Set([
         "study-doc:sidebar",
         "study-doc:repo",
@@ -337,24 +299,12 @@ export default function AppSidebarClient({
       ]);
 
       if (!key) {
-        // storage cleared (e.g. localStorage.clear())
-        console.info(
-          "AppSidebarClient: storage event with no key (storage cleared) — refreshing sidebar",
-        );
         refreshFromStorage();
         return;
       }
 
       if (triggerKeys.has(key)) {
-        console.info(
-          `AppSidebarClient: storage event for '${key}' — old='${e.oldValue ?? ""}' new='${e.newValue ?? ""}'`,
-        );
         refreshFromStorage();
-      } else {
-        // Non-related storage key changed; ignore but leave a debug trace.
-        console.debug(
-          `AppSidebarClient: storage event for unrelated key '${key}' — ignoring`,
-        );
       }
     };
 
@@ -367,41 +317,34 @@ export default function AppSidebarClient({
     };
   }, [refreshFromStorage]);
 
-  // Ensure we always have some renderable nav
   const renderNav = useMemo(
-    () => (nav && nav.length ? nav : [{ title: "Home", url: "/" }]),
+    () => (nav && nav.length ? nav : []),
     [nav],
   );
 
-  const header = (
-    <SidebarHeader>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton size="lg" asChild>
-            <a href="#" className="flex items-center gap-2">
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <GalleryVerticalEnd className="size-4" />
-              </div>
-              <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-medium">Study Doc</span>
-              </div>
-            </a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarHeader>
-  );
-
   return (
-    <Sidebar variant="floating" {...props}>
-      {header}
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu className="gap-2">
-            {renderNestedItems(renderNav, pathname, 0)}
-          </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+    <>
+      <Sidebar className="minimal-sidebar" {...props}>
+        <SidebarContent>
+          <SidebarGroup>
+            {isLoading ? (
+              <SidebarSkeleton />
+            ) : (
+              <SidebarMenu className="sidebar-menu">
+                {renderNestedItems(renderNav, pathname, 0)}
+              </SidebarMenu>
+            )}
+          </SidebarGroup>
+        </SidebarContent>
+        
+        {/* Collapse button at bottom */}
+        <div className="sidebar-footer">
+          <SidebarCollapseButton />
+        </div>
+      </Sidebar>
+      
+      {/* Floating trigger when collapsed */}
+      <FloatingTrigger />
+    </>
   );
 }
