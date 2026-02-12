@@ -128,6 +128,34 @@ export function buildSidebar(tree: GitTreeEntry[]): NavItem[] {
 
   const root: Record<string, InternalNode> = {};
 
+  // Common image file extensions to exclude
+  const imageExtensions = new Set([
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".svg",
+    ".webp",
+    ".bmp",
+    ".ico",
+    ".tiff",
+    ".tif",
+    ".avif",
+    ".apng",
+    ".jfif",
+    ".pjpeg",
+    ".pjp",
+  ]);
+
+  // Check if a path part is an Assets folder (case insensitive)
+  const isAssetsFolder = (name: string) => name.toLowerCase() === "assets";
+
+  // Check if a filename is an image
+  const isImageFile = (filename: string) => {
+    const lower = filename.toLowerCase();
+    return Array.from(imageExtensions).some((ext) => lower.endsWith(ext));
+  };
+
   for (const entry of tree) {
     // Skip entries that don't have a path
     if (!entry || typeof entry.path !== "string" || entry.path.length === 0)
@@ -137,6 +165,13 @@ export function buildSidebar(tree: GitTreeEntry[]): NavItem[] {
 
     // Skip any paths that contain hidden files/directories (starting with '.')
     if (parts.some((part) => part.startsWith("."))) continue;
+
+    // Skip Assets folders anywhere in the path
+    if (parts.some((part) => isAssetsFolder(part))) continue;
+
+    // Skip image files
+    const filename = parts[parts.length - 1];
+    if (entry.type === "blob" && isImageFile(filename)) continue;
 
     let current = root;
 

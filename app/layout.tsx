@@ -9,6 +9,12 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { GrainTextureOverlay } from "@/components/theme/grain-overlay";
+import { RepoProvider } from "@/components/repo/repo-provider";
+import { CommandPaletteProvider } from "@/components/command-palette";
+import { SearchModal } from "@/components/search";
+import { ShortcutsModal } from "@/components/shortcuts";
 import type { ReactNode } from "react";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -38,19 +44,34 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   // Modal open state is managed inside the client `StartupModal` component.
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable} antialiased`}
       >
-        {/* Client startup modal rendered on every page load (blocks interaction) */}
-        <StartupModal />
+        <ThemeProvider>
+          <RepoProvider>
+            <CommandPaletteProvider>
+              {/* Grain texture overlay - only visible when enabled */}
+              <GrainTextureOverlay />
+              
+              {/* Search Modal - can be opened from command palette */}
+              <SearchModal />
+              
+              {/* Keyboard Shortcuts Modal */}
+              <ShortcutsModal />
+              
+              {/* Client startup modal rendered on every page load (blocks interaction) */}
+              <StartupModal />
 
-        <SidebarProvider>
-          <AppSidebarClient />
-          <SidebarInset>
-            <div className="flex flex-1 flex-col">{children}</div>
-          </SidebarInset>
-        </SidebarProvider>
+              <SidebarProvider>
+                <AppSidebarClient />
+                <SidebarInset>
+                  <div className="flex flex-1 flex-col">{children}</div>
+                </SidebarInset>
+              </SidebarProvider>
+            </CommandPaletteProvider>
+          </RepoProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -4,7 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { parseGithubUrl, fetchRepoTree, buildSidebar } from "@/lib/utils";
+import { parseGithubUrl } from "@/lib/utils";
+import { useRepos } from "@/components/repo";
 
 /**
  * StartupModal
@@ -17,13 +18,13 @@ import { parseGithubUrl, fetchRepoTree, buildSidebar } from "@/lib/utils";
  *
  * This version:
  * - Lets the user enter a GitHub repo URL.
- * - Fetches the repo tree, builds a sidebar (using your utils), and stores
- *   the resulting navigation in localStorage so the rest of the app can read it.
- * - "Use Notes" button is enabled only when notes exist in localStorage.
+ * - Uses RepoProvider to manage repositories.
+ * - "Use Notes" button is enabled only when repos exist.
  * - Shows status and basic errors; does not close the modal on failure.
  */
 export default function StartupModal() {
   const pathname = usePathname();
+  const { repos, addRepo, isLoading: isRepoLoading, activeRepo } = useRepos();
   const [open, setOpen] = useState<boolean>(true);
   const [url, setUrl] = useState<string>(() => {
     try {
@@ -32,19 +33,18 @@ export default function StartupModal() {
       return "";
     }
   });
-  const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
-  const [hasExistingNotes, setHasExistingNotes] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Check if notes exist in localStorage
+  const hasExistingNotes = repos.length > 0;
+
+  // Listen for event to show modal from sidebar
   useEffect(() => {
-    try {
-      const existing = localStorage.getItem("study-doc:sidebar");
-      setHasExistingNotes(!!(existing && existing.length > 10));
-    } catch {
-      setHasExistingNotes(false);
-    }
+    const handleShowModal = () => {
+      setOpen(true);
+    };
+    window.addEventListener("study-doc:show-startup-modal", handleShowModal);
+    return () => window.removeEventListener("study-doc:show-startup-modal", handleShowModal);
   }, []);
 
   useEffect(() => {
@@ -93,44 +93,15 @@ export default function StartupModal() {
       return;
     }
 
-    setLoading(true);
     setStatus("Parsing repository URL...");
 
     try {
       const { owner, repo } = parseGithubUrl(url.trim());
       setStatus(`Fetching repository tree for ${owner}/${repo}...`);
 
-      const tree = await fetchRepoTree(owner, repo);
-      if (!Array.isArray(tree) || tree.length === 0) {
-        throw new Error("Repository tree is empty or could not be fetched.");
-      }
+      await addRepo(owner, repo, url.trim());
 
-      setStatus("Building sidebar from repository tree...");
-      const sidebar = buildSidebar(tree);
-
-      // Save results to localStorage so the app's sidebar can read it.
-      try {
-        localStorage.setItem("study-doc:repo", url.trim());
-        localStorage.setItem("study-doc:sidebar", JSON.stringify(sidebar));
-        localStorage.setItem("study-doc:repo_owner", owner);
-        localStorage.setItem("study-doc:repo_name", repo);
-
-        // Notify any client-side listeners (sidebar) that the nav has been updated.
-        // Using a CustomEvent so listeners can reactively refresh their state.
-        try {
-          window.dispatchEvent(new CustomEvent("study-doc:nav-updated"));
-        } catch {
-          // If dispatching fails for any reason, don't block user flow.
-        }
-      } catch {
-        // localStorage may fail in some environments; surface an error but continue.
-        setStatus("Fetched sidebar but failed to save to localStorage.");
-        // still close so user can continue using the app
-        setOpen(false);
-        return;
-      }
-
-      setStatus("Fetched and saved sidebar successfully.");
+      setStatus("Fetched and saved repository successfully.");
       // Give a moment for users to see the message then close
       setTimeout(() => {
         setOpen(false);
@@ -153,8 +124,6 @@ export default function StartupModal() {
       }
 
       setStatus(message);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -209,7 +178,7 @@ export default function StartupModal() {
         />
 
         <div className="mb-3 text-sm min-h-[1.25rem]">
-          {loading ? (
+          {isRepoLoading ? (
             <span className="text-muted-foreground">
               Working... {status || ""}
             </span>
@@ -234,8 +203,8 @@ export default function StartupModal() {
           >
             Use Notes
           </Button>
-          <Button variant="default" onClick={handleFetch} disabled={loading}>
-            {loading ? "Fetching..." : "Fetch notes"}
+          <Button variant="default" onClick={handleFetch} disabled={isRepoLoading}>
+            {isRepoLoading ? "Fetching..." : "Fetch notes"}
           </Button>
         </div>
       </div>

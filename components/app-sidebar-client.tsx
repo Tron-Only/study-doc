@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronRight, Folder, FileText, PanelLeftClose, PanelLeft } from "lucide-react";
+import { ChevronRight, Folder, FileText, PanelLeftClose, PanelLeft, Home, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 import {
   Sidebar,
@@ -22,6 +23,8 @@ import {
 import type { NavItem as UtilsNavItem, GitTreeEntry } from "@/lib/utils";
 import { fetchRepoTree, buildSidebar } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { RepoSwitcher } from "@/components/repo/repo-switcher";
+import { useRepos } from "@/components/repo/repo-provider";
 
 export type NavItem = UtilsNavItem;
 
@@ -118,14 +121,14 @@ function renderNestedItems(
     return (
       <SidebarMenuItem key={key}>
         {href ? (
-          <a
+          <Link
             href={href}
             className={`sidebar-file-link ${active ? "active" : ""}`}
             aria-current={active ? "page" : undefined}
           >
             <FileText className="sidebar-icon" size={16} />
             <span className="sidebar-item-text">{item.title}</span>
-          </a>
+          </Link>
         ) : (
           <div className="sidebar-folder-label">
             <Folder className="sidebar-icon" size={16} />
@@ -322,9 +325,30 @@ export default function AppSidebarClient({
     [nav],
   );
 
+  const { activeRepo } = useRepos();
+
+  const handleAddRepo = () => {
+    // Trigger the startup modal to show
+    window.dispatchEvent(new CustomEvent("study-doc:show-startup-modal"));
+  };
+
   return (
     <>
       <Sidebar className="minimal-sidebar" {...props}>
+        {/* Sidebar Header */}
+        <div className="sidebar-header">
+          <Link href="/" className="sidebar-header-link">
+            <Home className="sidebar-icon" size={18} />
+            <span className="sidebar-header-text">Study Doc</span>
+          </Link>
+          <SidebarCollapseButton />
+        </div>
+
+        {/* Repository Switcher */}
+        <div className="px-2 py-2">
+          <RepoSwitcher onAddRepo={handleAddRepo} />
+        </div>
+
         <SidebarContent>
           <SidebarGroup>
             {isLoading ? (
@@ -336,13 +360,18 @@ export default function AppSidebarClient({
             )}
           </SidebarGroup>
         </SidebarContent>
-        
-        {/* Collapse button at bottom */}
-        <div className="sidebar-footer">
-          <SidebarCollapseButton />
+
+        {/* Sidebar Footer */}
+        <div className="mt-auto p-2 border-t border-sidebar-border">
+          <Button variant="ghost" size="sm" className="w-full justify-start gap-2" asChild>
+            <Link href="/">
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
+            </Link>
+          </Button>
         </div>
       </Sidebar>
-      
+
       {/* Floating trigger when collapsed */}
       <FloatingTrigger />
     </>

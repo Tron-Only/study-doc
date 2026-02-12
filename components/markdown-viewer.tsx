@@ -368,6 +368,30 @@ export default function MarkdownViewer({
         
         if (!mounted) return;
         setContent(md);
+        
+        // Track this note in recent notes
+        try {
+          const filePath = path ?? slug ?? "";
+          // Decode URL-encoded characters for display (e.g., %20 -> space)
+          const decodedPath = decodeURIComponent(filePath);
+          const title = decodedPath.split("/").pop()?.replace(/\.md$/, "") || decodedPath;
+          const recentNote = {
+            path: filePath,
+            title: title,
+            timestamp: Date.now(),
+            preview: md.substring(0, 100).replace(/[#*`]/g, "").trim() + "...",
+          };
+          
+          const existingNotes = JSON.parse(localStorage.getItem("study-doc:recent_notes") || "[]");
+          const filteredNotes = existingNotes.filter((note: { path: string }) => note.path !== filePath);
+          const updatedNotes = [recentNote, ...filteredNotes].slice(0, 10);
+          localStorage.setItem("study-doc:recent_notes", JSON.stringify(updatedNotes));
+          
+          // Dispatch event to notify dashboard
+          window.dispatchEvent(new CustomEvent("study-doc:recent-notes-updated"));
+        } catch (e) {
+          // Silently fail if tracking doesn't work
+        }
       } catch (err) {
         if (!mounted) return;
         const message = err instanceof Error ? err.message : String(err);

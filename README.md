@@ -48,6 +48,10 @@ your-notes-repo/
 2. **Assets Folder**: Store images in an `Assets` folder at the appropriate level
 3. **Public Repository**: Repository must be public (private repos not yet supported)
 4. **File Extensions**: Use `.md` for Markdown files
+5. **Filename Characters**: Avoid these characters in filenames: `[ ] # ^ | %`
+   - These characters may cause parsing issues or URL encoding problems
+   - Use hyphens (`-`) or underscores (`_`) instead of spaces
+   - Example: `my-notes.md` instead of `my notes.md` or `my%20notes.md`
 
 ### Image Conventions
 
