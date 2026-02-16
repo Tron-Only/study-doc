@@ -6,6 +6,7 @@ import { useRepos } from "@/components/repo";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Folder, Clock, Sparkles, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 // Types for recent notes
@@ -19,6 +20,7 @@ interface RecentNote {
 export default function DashboardPage() {
   const { accentColorRgba, resolvedTheme } = useTheme();
   const { activeRepo } = useRepos();
+  const router = useRouter();
   const [recentNotes, setRecentNotes] = useState<RecentNote[]>([]);
   const [mounted, setMounted] = useState(false);
 
@@ -95,11 +97,16 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="flex gap-2 flex-wrap">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => window.dispatchEvent(new CustomEvent("study-doc:open-search"))}>
                 <Search className="w-4 h-4 mr-2" />
                 Search Notes
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => {
+                const lastNote = recentNotes[0];
+                if (lastNote) {
+                  router.push(`/notes/${lastNote.path}`);
+                }
+              }} disabled={recentNotes.length === 0}>
                 <Clock className="w-4 h-4 mr-2" />
                 Continue Reading
               </Button>
