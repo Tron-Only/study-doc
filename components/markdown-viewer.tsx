@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { fetchMarkdown } from "@/lib/utils";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Callout } from "./markdown/Callout";
 import { MermaidDiagram } from "./markdown/MermaidDiagram";
+import { CodeBlock, InlineCode } from "./markdown/CodeBlock";
 import { parseCallout } from "./markdown/callout-utils";
 import "./markdown/markdown-styles.css";
 
@@ -40,7 +41,7 @@ const renderers = {
       inline === true || (!codeText.includes("\n") && !codeClassName);
 
     if (isInline) {
-      return <code className="inline-code">{children}</code>;
+      return <InlineCode>{children}</InlineCode>;
     }
 
     const language = codeClassName?.replace("language-", "") || "";
@@ -49,11 +50,7 @@ const renderers = {
       return <MermaidDiagram code={codeText} />;
     }
 
-    return (
-      <pre className={codeClassName || "bg-muted p-2 rounded"}>
-        <code>{children}</code>
-      </pre>
-    );
+    return <CodeBlock code={codeText} language={language || "text"} />;
   },
 
   blockquote: ({ children }: { children?: React.ReactNode }) => {
@@ -144,8 +141,6 @@ export default function MarkdownViewer({
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const resolvedOwnerRef = useRef<string | null>(null);
-  const resolvedRepoRef = useRef<string | null>(null);
   const { open: sidebarOpen } = useSidebar();
 
   useEffect(() => {
@@ -178,8 +173,6 @@ export default function MarkdownViewer({
         }
 
         const md = await fetchMarkdown(o, r, filePath);
-        resolvedOwnerRef.current = o;
-        resolvedRepoRef.current = r;
 
         if (!mounted) return;
         setContent(md);

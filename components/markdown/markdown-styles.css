@@ -204,3 +204,47 @@
   color: var(--muted-foreground);
   border-left: 0.25em solid var(--border);
 }
+
+/* Code block styling */
+.code-block-wrapper {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.code-block-header {
+  background-color: #2d2d2d;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 6px 6px 0 0;
+}
+
+.code-language {
+  color: #9cdcfe;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  text-transform: lowercase;
+}
+
+.code-copy-button {
+  background: transparent;
+  border: none;
+  color: #858585;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.code-copy-button:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.code-copy-button:active {
+  transform: scale(0.95);
+}
