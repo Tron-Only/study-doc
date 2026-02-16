@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { fetchMarkdown } from "@/lib/utils";
-import { useSidebar } from "@/components/ui/sidebar";
 import { Callout } from "./markdown/Callout";
 import { MermaidDiagram } from "./markdown/MermaidDiagram";
 import { CodeBlock, InlineCode } from "./markdown/CodeBlock";
@@ -141,7 +140,6 @@ export default function MarkdownViewer({
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { open: sidebarOpen } = useSidebar();
 
   useEffect(() => {
     const filePath = path ?? slug;
@@ -196,7 +194,7 @@ export default function MarkdownViewer({
   };
 
   return (
-    <div className={`${className ?? "max-w-none"} ${sidebarOpen ? "sidebar-open" : ""}`}>
+    <div className={className ?? "max-w-none"}>
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading note…</div>
       ) : error ? (
