@@ -29,6 +29,10 @@ const renderers = {
     <a {...props} target="_blank" rel="noopener noreferrer" />
   ),
 
+  pre: ({ children }: { children?: React.ReactNode }) => {
+    return <>{children}</>;
+  },
+
   code: (props: {
     inline?: boolean;
     className?: string;
