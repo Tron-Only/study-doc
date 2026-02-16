@@ -8,6 +8,7 @@ import Link from "next/link";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarMenu,
   SidebarMenuItem,
@@ -349,8 +350,8 @@ export default function AppSidebarClient({
           <RepoSwitcher onAddRepo={handleAddRepo} />
         </div>
 
-        <SidebarContent>
-          <SidebarGroup>
+        <SidebarContent className="sidebar-scrollable-content">
+          <SidebarGroup className="sidebar-content-group">
             {isLoading ? (
               <SidebarSkeleton />
             ) : (
@@ -362,14 +363,14 @@ export default function AppSidebarClient({
         </SidebarContent>
 
         {/* Sidebar Footer */}
-        <div className="mt-auto p-2 border-t border-sidebar-border">
+        <SidebarFooter className="sidebar-footer">
           <Button variant="ghost" size="sm" className="w-full justify-start gap-2" asChild>
             <Link href="/">
               <Settings className="h-4 w-4" />
               <span>Settings</span>
             </Link>
           </Button>
-        </div>
+        </SidebarFooter>
       </Sidebar>
 
       {/* Floating trigger when collapsed */}

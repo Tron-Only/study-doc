@@ -2,22 +2,22 @@
    MINIMAL SIDEBAR STYLES - Theme Aware
    ============================================ */
 
-/* Sidebar Container */
+/* Sidebar Container - Fixed positioning like Obsidian */
 .minimal-sidebar {
   background: hsl(var(--sidebar-background)) !important;
-  border-right: 1px solid hsl(var(--sidebar-border)) !important;
-  width: 260px !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Sidebar Header */
+/* Sidebar Header - Obsidian style */
 .sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
-  border-bottom: 1px solid hsl(var(--sidebar-border));
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid hsl(var(--sidebar-border));
   background: hsl(var(--sidebar-background));
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .sidebar-header-link {
@@ -291,22 +291,64 @@
   transition-duration: 150ms;
 }
 
-/* Scrollbar styling */
+/* Enhanced Scrollbar styling */
+.minimal-sidebar [data-sidebar="content"]::-webkit-scrollbar,
 .minimal-sidebar ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
 
+.minimal-sidebar [data-sidebar="content"]::-webkit-scrollbar-track,
 .minimal-sidebar ::-webkit-scrollbar-track {
-  background: transparent;
+  background: hsl(var(--sidebar-background));
+  border-radius: 4px;
 }
 
+.minimal-sidebar [data-sidebar="content"]::-webkit-scrollbar-thumb,
 .minimal-sidebar ::-webkit-scrollbar-thumb {
   background: hsl(var(--sidebar-border));
-  border-radius: 3px;
+  border-radius: 4px;
+  border: 2px solid hsl(var(--sidebar-background));
 }
 
+.minimal-sidebar [data-sidebar="content"]::-webkit-scrollbar-thumb:hover,
 .minimal-sidebar ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--sidebar-border) / 1.2);
+  background: hsl(var(--sidebar-foreground) / 0.3);
+}
+
+/* Firefox scrollbar */
+.minimal-sidebar [data-sidebar="content"] {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--sidebar-border)) hsl(var(--sidebar-background));
+}
+
+/* Scrollable content area */
+.sidebar-scrollable-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar-content-group {
+  min-height: min-content;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  flex-shrink: 0;
+  border-top: 2px solid hsl(var(--sidebar-border));
+  background: hsl(var(--sidebar-background));
+  padding: 0.75rem;
+  margin-top: auto;
+}
+
+/* Ensure proper flex layout for sidebar inner */
+[data-sidebar="sidebar"] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Accessibility: Focus states */
@@ -316,6 +358,39 @@
 .floating-sidebar-trigger:focus-visible {
   outline: 2px solid var(--accent-color-rgba, var(--accent-color, hsl(var(--primary))));
   outline-offset: 2px;
+}
+
+/* Ensure sidebar wrapper positions correctly */
+[data-slot="sidebar-wrapper"] {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Sidebar gap creates space for fixed sidebar */
+[data-slot="sidebar-gap"] {
+  flex-shrink: 0;
+  flex-grow: 0;
+  transition: width 0.2s ease;
+}
+
+/* Fixed sidebar container */
+[data-slot="sidebar-container"] {
+  position: fixed !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 50;
+}
+
+[data-slot="sidebar-container"][data-side="left"] {
+  left: 0 !important;
+}
+
+[data-slot="sidebar-container"][data-side="right"] {
+  right: 0 !important;
 }
 
 /* Reduced motion */
