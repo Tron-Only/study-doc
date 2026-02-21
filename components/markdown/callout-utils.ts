@@ -26,19 +26,21 @@ const createConfig = (
 ): CalloutConfig => ({
   icon,
   color,
-  bgColor: `${color}1a`, // 10% opacity hex
+  bgColor: `${color}12`, // ~7% opacity hex
   borderColor: color,
 });
 
-// Color definitions
-const BLUE = "#3b82f6";
-const CYAN = "#06b6d4";
-const GREEN = "#10b981";
-const YELLOW = "#eab308";
-const ORANGE = "#f59e0b";
-const RED = "#ef4444";
-const PURPLE = "#a855f7";
-const GRAY = "#6b7280";
+// ─── Muted Ink & Paper callout palette ──────────────────────
+// Warm, desaturated tones that sit comfortably on parchment/charcoal.
+
+const BLUE    = "#5c7a8a";   // slate blue
+const CYAN    = "#5c8a8a";   // teal ink
+const GREEN   = "#5c8a6b";   // sage green
+const YELLOW  = "#8a7a5c";   // warm amber
+const ORANGE  = "#8a6b5c";   // warm clay
+const RED     = "#8a5c5c";   // muted oxblood
+const PURPLE  = "#7a5c8a";   // dusty plum
+const GRAY    = "#7a7a7a";   // neutral
 
 // Group callout types by their styling
 export const CALLOUT_TYPES: Record<string, CalloutConfig> = {

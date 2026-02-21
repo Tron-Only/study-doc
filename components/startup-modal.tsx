@@ -13,14 +13,7 @@ import { useRepos } from "@/components/repo";
  * - Only shows on the main page ("/").
  * - Does NOT auto-close on refresh - user must choose an action.
  * - Blocks all interaction with the page until the user clicks the button.
- * - As requested, clicking outside or pressing Escape will NOT close the modal.
- * - Background uses a mostly-opaque black overlay with a slight blur.
- *
- * This version:
- * - Lets the user enter a GitHub repo URL.
- * - Uses RepoProvider to manage repositories.
- * - "Use Notes" button is enabled only when repos exist.
- * - Shows status and basic errors; does not close the modal on failure.
+ * - Clicking outside or pressing Escape will NOT close the modal.
  */
 export default function StartupModal() {
   const pathname = usePathname();
@@ -58,16 +51,13 @@ export default function StartupModal() {
       }
     };
 
-    // Prevent focus moving outside the modal by intercepting focusin
-    // and forcing focus back to the first focusable element if needed.
-    // This is a lightweight focus-trap: puts focus on the input if focus leaves.
+    // Lightweight focus-trap: puts focus on the input if focus leaves.
     const onFocusIn = (e: FocusEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
       const modal = document.getElementById("startup-modal");
       if (!modal) return;
       if (!modal.contains(target)) {
-        // Return focus to the input inside the modal
         const input = modal.querySelector<HTMLInputElement>("input");
         input?.focus();
       }
@@ -107,11 +97,9 @@ export default function StartupModal() {
         setOpen(false);
       }, 400);
     } catch (err: unknown) {
-      // Safely extract an error message from unknown error types
       console.error(err);
       let message = "Failed to fetch repository. Check the URL and try again.";
 
-      // Narrow the unknown error into known shapes without using `any`.
       type HasMessage = { message?: unknown };
 
       if (typeof err === "string") {
@@ -133,38 +121,43 @@ export default function StartupModal() {
       aria-hidden={false}
       role="presentation"
       className="fixed inset-0 z-[60] flex items-center justify-center"
-      // Prevent any pointer events from reaching the background container.
       onClick={(e) => {
         e.stopPropagation();
       }}
     >
-      {/* Overlay: mostly black and nearly opaque, with a slight blur */}
+      {/* Overlay — warm dark scrim */}
       <div
-        className="absolute inset-0 bg-black/95 backdrop-blur-sm"
+        className="absolute inset-0"
         style={{
-          WebkitBackdropFilter: "blur(4px)",
-          backdropFilter: "blur(4px)",
+          backgroundColor: "oklch(0.12 0.006 55 / 0.92)",
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
         }}
-        // Swallow clicks on the overlay so clicking outside does nothing.
         onClick={(e) => {
           e.stopPropagation();
         }}
       />
 
-      {/* Modal content */}
+      {/* Modal dialog */}
       <div
         id="startup-modal"
         role="dialog"
         aria-modal="true"
         aria-label="Startup modal"
-        className="relative z-10 w-full max-w-lg rounded-lg border bg-card text-card-foreground p-6 shadow-lg"
-        // prevent clicks from bubbling out
+        className="relative z-10 w-full max-w-md rounded-lg border bg-card text-card-foreground p-6 shadow-xl"
+        style={{
+          boxShadow: "0 8px 32px oklch(0 0 0 / 0.15), 0 2px 8px oklch(0 0 0 / 0.08)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="mb-1 text-lg font-semibold">Welcome</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          To get started, enter the GitHub repository URL that contains your
-          notes (e.g. https://github.com/username/repo).
+        <h2
+          className="mb-1 text-lg font-semibold tracking-tight"
+          style={{ fontFamily: "var(--font-ibm-plex-sans), var(--font-geist-sans), system-ui" }}
+        >
+          Welcome
+        </h2>
+        <p className="mb-5 text-sm text-muted-foreground leading-relaxed">
+          Enter the GitHub repository URL that contains your notes to get started.
         </p>
 
         <Input
@@ -174,26 +167,27 @@ export default function StartupModal() {
           autoFocus
           placeholder="https://github.com/username/notes"
           aria-label="Website URL"
-          className="mb-4"
+          className="mb-4 text-sm"
         />
 
-        <div className="mb-3 text-sm min-h-[1.25rem]">
+        <div className="mb-4 text-xs min-h-[1rem] leading-relaxed">
           {isRepoLoading ? (
             <span className="text-muted-foreground">
-              Working... {status || ""}
+              {status || "Working..."}
             </span>
           ) : status ? (
             <span className="text-muted-foreground">{status}</span>
           ) : hasExistingNotes ? (
             <span className="text-muted-foreground">Notes available. Click &quot;Use Notes&quot; to continue or fetch new notes.</span>
           ) : (
-            <span className="text-muted-foreground">No notes found. Enter a GitHub repo URL to fetch notes.</span>
+            <span className="text-muted-foreground/60">No notes found. Enter a GitHub repo URL to fetch notes.</span>
           )}
         </div>
 
         <div className="flex justify-end gap-2">
           <Button
             variant="secondary"
+            size="sm"
             disabled={!hasExistingNotes}
             onClick={() => {
               if (hasExistingNotes) {
@@ -203,7 +197,7 @@ export default function StartupModal() {
           >
             Use Notes
           </Button>
-          <Button variant="default" onClick={handleFetch} disabled={isRepoLoading}>
+          <Button variant="default" size="sm" onClick={handleFetch} disabled={isRepoLoading}>
             {isRepoLoading ? "Fetching..." : "Fetch notes"}
           </Button>
         </div>

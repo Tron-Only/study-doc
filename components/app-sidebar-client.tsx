@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronRight, Folder, FileText, PanelLeftClose, PanelLeft, Home, Settings } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { ChevronRight, Folder, FileText, PanelLeftClose, PanelLeft, Home, Settings, Play } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 
 import {
@@ -80,11 +80,17 @@ function SidebarSkeleton() {
   );
 }
 
+/** Check if an item is the flashcards root folder */
+function isFlashcardsFolder(item: NavItem): boolean {
+  return item.title.toLowerCase() === "flashcards" && !!item.items;
+}
+
 /** Render nested items recursively with collapsible dropdowns. */
 function renderNestedItems(
   items: NavItem[] | undefined,
   pathname: string | null,
   depth = 0,
+  router?: ReturnType<typeof useRouter>,
 ): React.ReactNode {
   if (!items || items.length === 0) return null;
 
@@ -93,6 +99,24 @@ function renderNestedItems(
     const href = toHref(item.url);
     const active = itemIsActive(item, pathname);
     const isFolder = item.items && item.items.length > 0;
+
+    // ── Flashcards folder ─────────────────────────────────────
+    if (isFlashcardsFolder(item)) {
+      const folderPath = encodeURIComponent(item.url);
+      const href = `/flashcards?path=${folderPath}`;
+      const isFlashcardsActive = pathname?.startsWith("/flashcards");
+      return (
+        <SidebarMenuItem key={key}>
+          <Link
+            href={href}
+            className={`sidebar-file-link sidebar-flashcards-link ${isFlashcardsActive ? "active" : ""}`}
+          >
+            <Play className="sidebar-icon sidebar-play-icon" size={15} />
+            <span className="sidebar-item-text">Flashcards</span>
+          </Link>
+        </SidebarMenuItem>
+      );
+    }
 
     if (isFolder) {
       return (
@@ -111,7 +135,7 @@ function renderNestedItems(
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarMenuSub className={depth === 0 ? "sidebar-sub-root" : "sidebar-sub-nested"}>
-                {renderNestedItems(item.items, pathname, depth + 1)}
+                {renderNestedItems(item.items, pathname, depth + 1, router)}
               </SidebarMenuSub>
             </CollapsibleContent>
           </SidebarMenuItem>
@@ -186,6 +210,7 @@ export default function AppSidebarClient({
   ...props
 }: AppSidebarClientProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [nav, setNav] = useState<NavItem[] | undefined>(() => {
     if (navMain && Array.isArray(navMain) && navMain.length > 0) {
       return navMain;
@@ -356,7 +381,7 @@ export default function AppSidebarClient({
               <SidebarSkeleton />
             ) : (
               <SidebarMenu className="sidebar-menu">
-                {renderNestedItems(renderNav, pathname, 0)}
+                {renderNestedItems(renderNav, pathname, 0, router)}
               </SidebarMenu>
             )}
           </SidebarGroup>

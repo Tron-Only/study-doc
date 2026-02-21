@@ -1,21 +1,23 @@
 /* ============================================
-   MINIMAL SIDEBAR STYLES - Theme Aware
+   SIDEBAR — Refined Ink & Paper
+   Warm parchment surface, hairline borders,
+   understated hover states, elegant typography.
    ============================================ */
 
-/* Sidebar Container - Fixed positioning like Obsidian */
+/* Sidebar Container */
 .minimal-sidebar {
-  background: hsl(var(--sidebar-background)) !important;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  background: var(--sidebar) !important;
+  border-right: 1px solid var(--sidebar-border);
 }
 
-/* Sidebar Header - Obsidian style */
+/* Sidebar Header */
 .sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  border-bottom: 2px solid hsl(var(--sidebar-border));
-  background: hsl(var(--sidebar-background));
+  border-bottom: 1px solid var(--sidebar-border);
+  background: var(--sidebar);
   gap: 0.5rem;
   flex-shrink: 0;
 }
@@ -25,19 +27,20 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  border-radius: 4px;
   background: transparent;
-  color: hsl(var(--sidebar-foreground));
-  font-size: 1rem;
+  color: var(--sidebar-foreground);
+  font-size: 0.9375rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease;
   flex: 1;
   min-width: 0;
 }
 
 .sidebar-header-link:hover {
-  background: hsl(var(--sidebar-accent));
+  background: var(--sidebar-accent);
 }
 
 .sidebar-header-text {
@@ -49,7 +52,7 @@
 }
 
 .sidebar-header-link .sidebar-icon {
-  color: var(--accent-color-rgba, var(--accent-color, hsl(var(--primary))));
+  color: var(--accent-color, var(--primary));
 }
 
 /* Header collapse button */
@@ -76,19 +79,20 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  border-radius: 4px;
   background: transparent;
   border: none;
-  color: hsl(var(--sidebar-foreground));
-  font-size: 0.875rem;
+  color: var(--sidebar-foreground);
+  font-size: 0.8125rem;
   font-weight: 500;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   text-align: left;
 }
 
 .sidebar-folder-trigger:hover {
-  background: hsl(var(--sidebar-accent));
+  background: var(--sidebar-accent);
 }
 
 /* File Link */
@@ -98,34 +102,36 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  border-radius: 4px;
   background: transparent;
-  color: hsl(var(--sidebar-foreground));
-  font-size: 0.875rem;
-  font-weight: 500;
+  color: var(--sidebar-foreground);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.005em;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   position: relative;
 }
 
 .sidebar-file-link:hover {
-  background: hsl(var(--sidebar-accent));
+  background: var(--sidebar-accent);
 }
 
 .sidebar-file-link.active {
-  background: hsl(var(--sidebar-accent));
-  color: var(--accent-color-rgba, var(--accent-color, hsl(var(--primary))));
+  background: var(--sidebar-accent);
+  color: var(--accent-color, var(--primary));
+  font-weight: 500;
 }
 
 .sidebar-file-link.active::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--accent-color-rgba, var(--accent-color, hsl(var(--primary))));
-  border-radius: 0 2px 2px 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--accent-color, var(--primary));
+  border-radius: 0 1px 1px 0;
 }
 
 /* Folder Label (non-clickable) */
@@ -135,25 +141,27 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  color: hsl(var(--sidebar-foreground) / 0.6);
-  font-size: 0.875rem;
-  font-weight: 500;
+  color: color-mix(in oklch, var(--sidebar-foreground) 50%, transparent);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 /* Icons */
 .sidebar-icon {
   flex-shrink: 0;
-  color: hsl(var(--sidebar-foreground) / 0.6);
+  color: color-mix(in oklch, var(--sidebar-foreground) 50%, transparent);
   transition: color 0.15s ease;
 }
 
 .sidebar-file-link:hover .sidebar-icon,
 .sidebar-folder-trigger:hover .sidebar-icon {
-  color: hsl(var(--sidebar-foreground));
+  color: var(--sidebar-foreground);
 }
 
 .sidebar-file-link.active .sidebar-icon {
-  color: var(--accent-color-rgba, var(--accent-color, hsl(var(--primary))));
+  color: var(--accent-color, var(--primary));
 }
 
 /* Item Text */
@@ -168,8 +176,8 @@
 /* Chevron (collapse indicator) */
 .sidebar-chevron {
   flex-shrink: 0;
-  color: hsl(var(--sidebar-foreground) / 0.6);
-  transition: transform 0.2s ease;
+  color: color-mix(in oklch, var(--sidebar-foreground) 40%, transparent);
+  transition: transform 0.2s ease, color 0.15s ease;
   margin-left: auto;
 }
 
@@ -181,7 +189,7 @@
 .sidebar-sub-root {
   margin-left: 0;
   padding-left: 0.75rem;
-  border-left: 1px solid hsl(var(--sidebar-border));
+  border-left: 1px solid var(--sidebar-border);
   margin-top: 0.125rem;
   margin-bottom: 0.125rem;
 }
@@ -189,7 +197,7 @@
 .sidebar-sub-nested {
   margin-left: 0;
   padding-left: 0.75rem;
-  border-left: 1px solid hsl(var(--sidebar-border));
+  border-left: 1px solid var(--sidebar-border);
   margin-top: 0.125rem;
   margin-bottom: 0.125rem;
 }
@@ -213,15 +221,15 @@
 .skeleton-icon {
   width: 16px;
   height: 16px;
-  background: hsl(var(--sidebar-accent));
-  border-radius: 4px;
+  background: var(--sidebar-accent);
+  border-radius: 3px;
   flex-shrink: 0;
 }
 
 .skeleton-text {
-  height: 14px;
-  background: hsl(var(--sidebar-accent));
-  border-radius: 4px;
+  height: 12px;
+  background: var(--sidebar-accent);
+  border-radius: 3px;
   flex: 1;
 }
 
@@ -230,22 +238,22 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.4;
+    opacity: 0.35;
   }
 }
 
 /* Sidebar Collapse Button */
 .sidebar-collapse-button {
-  color: hsl(var(--sidebar-foreground) / 0.6) !important;
+  color: color-mix(in oklch, var(--sidebar-foreground) 50%, transparent) !important;
   background: transparent !important;
-  border: 1px solid hsl(var(--sidebar-border)) !important;
-  transition: all 0.2s ease !important;
+  border: 1px solid var(--sidebar-border) !important;
+  transition: all 0.15s ease !important;
 }
 
 .sidebar-collapse-button:hover {
-  color: hsl(var(--sidebar-foreground)) !important;
-  background: hsl(var(--sidebar-accent)) !important;
-  border-color: hsl(var(--sidebar-border)) !important;
+  color: var(--sidebar-foreground) !important;
+  background: var(--sidebar-accent) !important;
+  border-color: var(--sidebar-border) !important;
 }
 
 /* Floating Trigger (when sidebar is collapsed) */
@@ -254,17 +262,16 @@
   top: 1rem;
   left: 1rem;
   z-index: 50;
-  color: hsl(var(--sidebar-foreground)) !important;
-  background: hsl(var(--sidebar-background)) !important;
-  border: 1px solid hsl(var(--sidebar-border)) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-  transition: all 0.2s ease !important;
+  color: var(--sidebar-foreground) !important;
+  background: var(--sidebar) !important;
+  border: 1px solid var(--sidebar-border) !important;
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04) !important;
+  transition: all 0.15s ease !important;
 }
 
 .floating-sidebar-trigger:hover {
-  background: hsl(var(--sidebar-accent)) !important;
-  border-color: hsl(var(--sidebar-border)) !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6) !important;
+  background: var(--sidebar-accent) !important;
+  box-shadow: 0 4px 12px oklch(0 0 0 / 0.12), 0 2px 4px oklch(0 0 0 / 0.06) !important;
 }
 
 /* Collapsed state adjustments */
@@ -286,40 +293,38 @@
 .sidebar-folder-trigger,
 .sidebar-icon,
 .sidebar-chevron {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-property: background, color, border-color, opacity;
+  transition-timing-function: ease;
   transition-duration: 150ms;
 }
 
-/* Enhanced Scrollbar styling */
+/* Scrollbar styling — thin, understated */
 .minimal-sidebar [data-sidebar="content"]::-webkit-scrollbar,
 .minimal-sidebar ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .minimal-sidebar [data-sidebar="content"]::-webkit-scrollbar-track,
 .minimal-sidebar ::-webkit-scrollbar-track {
-  background: hsl(var(--sidebar-background));
-  border-radius: 4px;
+  background: transparent;
 }
 
 .minimal-sidebar [data-sidebar="content"]::-webkit-scrollbar-thumb,
 .minimal-sidebar ::-webkit-scrollbar-thumb {
-  background: hsl(var(--sidebar-border));
-  border-radius: 4px;
-  border: 2px solid hsl(var(--sidebar-background));
+  background: color-mix(in oklch, var(--sidebar-foreground) 15%, transparent);
+  border-radius: 3px;
 }
 
 .minimal-sidebar [data-sidebar="content"]::-webkit-scrollbar-thumb:hover,
 .minimal-sidebar ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--sidebar-foreground) / 0.3);
+  background: color-mix(in oklch, var(--sidebar-foreground) 25%, transparent);
 }
 
 /* Firefox scrollbar */
 .minimal-sidebar [data-sidebar="content"] {
   scrollbar-width: thin;
-  scrollbar-color: hsl(var(--sidebar-border)) hsl(var(--sidebar-background));
+  scrollbar-color: color-mix(in oklch, var(--sidebar-foreground) 15%, transparent) transparent;
 }
 
 /* Scrollable content area */
@@ -337,8 +342,8 @@
 /* Sidebar Footer */
 .sidebar-footer {
   flex-shrink: 0;
-  border-top: 2px solid hsl(var(--sidebar-border));
-  background: hsl(var(--sidebar-background));
+  border-top: 1px solid var(--sidebar-border);
+  background: var(--sidebar);
   padding: 0.75rem;
   margin-top: auto;
 }
@@ -356,7 +361,7 @@
 .sidebar-folder-trigger:focus-visible,
 .sidebar-collapse-button:focus-visible,
 .floating-sidebar-trigger:focus-visible {
-  outline: 2px solid var(--accent-color-rgba, var(--accent-color, hsl(var(--primary))));
+  outline: 2px solid var(--accent-color, var(--primary));
   outline-offset: 2px;
 }
 
@@ -393,7 +398,28 @@
   right: 0 !important;
 }
 
-/* Reduced motion */
+/* Flashcards folder — special play button link */
+.sidebar-flashcards-link {
+  background: var(--sidebar-accent) !important;
+  border: 1px solid var(--sidebar-border) !important;
+  border-left: 2px solid var(--accent-color, var(--primary)) !important;
+  font-weight: 600 !important;
+}
+
+.sidebar-flashcards-link:hover {
+  background: var(--sidebar-accent) !important;
+  border-color: color-mix(in oklch, var(--sidebar-foreground) 20%, transparent) !important;
+}
+
+.sidebar-flashcards-link.active {
+  background: var(--sidebar-accent) !important;
+}
+
+.sidebar-play-icon {
+  color: var(--accent-color, var(--primary)) !important;
+}
+
+
 @media (prefers-reduced-motion: reduce) {
   .sidebar-file-link,
   .sidebar-folder-trigger,

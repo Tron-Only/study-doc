@@ -10,7 +10,6 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/theme/theme-provider";
-import { GrainTextureOverlay } from "@/components/theme/grain-overlay";
 import { RepoProvider } from "@/components/repo/repo-provider";
 import { CommandPaletteProvider } from "@/components/command-palette";
 import { SearchModal } from "@/components/search";
@@ -41,8 +40,6 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  // Modal open state is managed inside the client `StartupModal` component.
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -51,9 +48,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider>
           <RepoProvider>
             <CommandPaletteProvider>
-              {/* Grain texture overlay - only visible when enabled */}
-              <GrainTextureOverlay />
-              
               {/* Search Modal - can be opened from command palette */}
               <SearchModal />
               

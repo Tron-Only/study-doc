@@ -1,7 +1,11 @@
 // Theme system exports
-export { ThemeProvider, useTheme, DEFAULT_PRESETS, DEFAULT_ACCENT } from "./theme-provider";
-export { GrainTextureOverlay } from "./grain-overlay";
-export { ColorPicker } from "./color-picker";
-export { ThemeToggle } from "./theme-toggle";
-export { GrainControls } from "./grain-controls";
-export { TransparencyControls } from "./transparency-controls";
+export {
+  ThemeProvider,
+  useTheme,
+  THEMES,
+  DEFAULT_THEME_ID,
+  FONTS,
+  DEFAULT_FONT_ID,
+} from "./theme-provider";
+export type { ThemeDefinition, ThemeTokens, FontDefinition } from "./theme-provider";
+export { ThemeSelector } from "./theme-selector";
