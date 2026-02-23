@@ -11,22 +11,29 @@ A powerful Next.js web app that transforms GitHub repositories into beautiful, i
 - Seamless switching between different note collections
 
 ### 🎨 **Advanced Theme System**
-- **6 Curated Themes**: Midnight (dark), Solarized, Catppuccin, Nord, Tokyo Night, Gruvbox
-- **10 Typography Options**: System fonts, Geist, IBM Plex, JetBrains Mono, SF Mono, Fira Code, and more
+- **6 Curated Themes**: 
+  - **Light**: Paper (warm parchment), Sepia (aged manuscript), Sage (botanical green)
+  - **Dark**: Obsidian (achromatic with purple accent), Rose (dusty pink), Midnight (deep indigo)
+- **System Theme Detection**: Automatically selects light/dark theme based on OS preference on first load
+- **10 Typography Options**: System fonts, Geist, IBM Plex, Georgia, Palatino, Charter, and more
 - **Custom Google Fonts**: Import any Google Font via URL
 - **3 Text Sizes**: Small, Medium, Large for comfortable reading
 - **OKLCH Color Space**: Modern color system for consistent, accessible themes
 - **Real-time Switching**: No page reload required
+- **Persistent Preferences**: All settings saved to localStorage
 
 ### 🃏 **Flashcard System (Balatro-Inspired)**
-- **YAML-Based Decks**: Create flashcards using simple YAML syntax
+- **YAML-Based Decks**: Create flashcards using simple YAML syntax with multiline support
 - **Spaced Repetition**: SM-2 algorithm tracks card difficulty and schedules reviews
 - **4-Rating System**: Again, Hard, Good, Easy with intelligent interval calculations
+- **First-Time Tutorial**: Info panel on first flip explains rating system
 - **Two Game Modes**:
-  - **Unit Mode**: Study a specific deck systematically
+  - **Unit Mode**: Study a specific deck systematically (intervals hidden, sorted hardest-first)
   - **Random Mode**: Progress through 3 "Blinds" (Small, Big, Boss) with increasing difficulty
 - **Statistics Tracking**: Reviews, lapses, ease factor, due dates per card
 - **3D Card Animations**: Smooth flip transitions with keyboard controls
+- **Results Clarity**: Clear scoring ("Good and Easy count as correct")
+- **Mobile-Optimized**: Touch-friendly cards with proper spacing and responsive design
 
 ### 🧭 **Rich Navigation**
 - **Command Palette** (`/`): Quick access to all actions and notes
@@ -55,6 +62,15 @@ A powerful Next.js web app that transforms GitHub repositories into beautiful, i
 - Command palette for quick actions
 - Navigation with arrow keys in command palette and modals
 - Shortcuts modal (`?`) for discoverability
+
+### 📱 **Mobile-First Responsive Design**
+- **Full Mobile Support**: Optimized for all screen sizes (phones, tablets, desktop)
+- **Auto-Closing Sidebar**: Sidebar automatically closes on mobile after navigation
+- **Unified Trigger**: Clean floating trigger button works consistently on all devices
+- **Touch-Optimized**: 44x44px minimum touch targets, proper spacing
+- **Responsive Layouts**: Theme selector, flashcards, and content adapt to screen size
+- **No Horizontal Scroll**: Proper overflow handling prevents horizontal scrolling
+- **Font Scaling**: Text remains readable at all viewport sizes
 
 ### 🔧 **Developer Experience**
 - Full TypeScript support with strict type checking
@@ -174,6 +190,8 @@ cards:
       3. Iteration - repeating statements (loops)
 ```
 
+**Note**: Use YAML's multiline syntax (`|`) to preserve newlines in flashcard content. The app properly renders multiline text with preserved formatting.
+
 **Flashcard Deck Requirements:**
 - Must be in a folder named `Flashcards` (case-insensitive)
 - Use `.yaml` or `.yml` file extension
@@ -252,16 +270,17 @@ To add additional repositories:
 
 ### Using Flashcards
 
-1. **Access Decks**: Click the Flashcards folder in the sidebar
+1. **Access Decks**: Click the Flashcards folder in the sidebar (displays as a Play icon)
 2. **Choose Mode**:
-   - **Unit Mode**: Study a specific deck with spaced repetition
-   - **Random Mode**: Play through 3 progressive "Blinds" (Small: 3 cards, Big: 5 cards, Boss: 8 cards)
-3. **Rate Cards**: Use keyboard or click to rate each card:
+   - **Unit Mode**: Study a specific deck with spaced repetition. Cards sorted hardest-first on replay. Day intervals hidden (for immediate study sessions).
+   - **Random Mode**: Play through 3 progressive "Blinds" (Small: 3 cards, Big: 5 cards, Boss: 8 cards). Full interval display for long-term review.
+3. **First Flip Tutorial**: On your first flip in Unit mode, an info panel explains the rating system
+4. **Rate Cards**: Use keyboard or click to rate each card:
    - `1` or click "Again" - Restart the card (hard reset)
-   - `2` or click "Hard" - Short interval, slight difficulty increase
-   - `3` or click "Good" - Standard progression
-   - `4` or click "Easy" - Longer interval, card gets easier
-4. **Track Progress**: View statistics after each session
+   - `2` or click "Hard" - Short interval, slight difficulty increase  
+   - `3` or click "Good" - Standard progression ✓ (counts as correct)
+   - `4` or click "Easy" - Longer interval, card gets easier ✓ (counts as correct)
+5. **Track Progress**: View statistics after each session. "Good" and "Easy" both count toward your correct score.
 
 ### Supported Markdown Features
 
@@ -322,7 +341,8 @@ To add additional repositories:
 ### Customizing Appearance
 
 1. **Change Theme**: Click the theme selector on the dashboard
-   - Choose from 6 curated themes
+   - Choose from 6 curated themes (3 light, 3 dark)
+   - On first load, automatically selects a theme matching your OS preference (dark mode → Obsidian, light mode → Paper)
    - Themes update in real-time across all tabs
    
 2. **Change Font**: Select from 10 built-in fonts or add a custom Google Font
@@ -330,6 +350,7 @@ To add additional repositories:
    - Import custom fonts via Google Fonts URL
    
 3. **Adjust Text Size**: Choose Small, Medium, or Large for comfortable reading
+   - All settings persist to localStorage for future visits
 
 ## Development
 
@@ -412,11 +433,14 @@ Two-part sidebar system:
 - Automatically builds navigation tree from GitHub repository
 - Supports multi-level nested folders
 - Special handling for Flashcards folders
+- **Mobile features**: Auto-closes on navigation, unified floating trigger for all screen sizes
+- Clean, consistent UX across desktop and mobile devices
 
 #### ThemeProvider (`components/theme/theme-provider.tsx`)
 
 Comprehensive theme management:
-- 6 predefined themes with OKLCH color tokens
+- 6 predefined themes (3 light, 3 dark) with OKLCH color tokens
+- System theme detection on first load (uses `prefers-color-scheme` media query)
 - 10 font options with bundled and system fonts
 - Custom Google Font import
 - Real-time theme switching without page reload
@@ -425,11 +449,13 @@ Comprehensive theme management:
 #### FlashcardDeck (`components/flashcards/FlashcardDeck.tsx`)
 
 Flashcard game interface:
-- Two game modes (Unit, Random)
-- 3D card flip animations
+- Two game modes (Unit with hidden intervals, Random with full intervals)
+- First-time tutorial panel explaining rating system
+- 3D card flip animations with preserved multiline formatting
 - 4-rating system integration with spaced repetition
-- Progress tracking and session summaries
+- Progress tracking and session summaries with clear scoring
 - Keyboard and click controls
+- Fully mobile-responsive with touch optimization
 
 ### Adding Custom Features
 
@@ -535,6 +561,14 @@ No environment variables are required for basic functionality. However, you can 
 2. Ensure you're not in private/incognito mode
 3. Clear browser cache and try again
 4. Check browser console for storage quota errors
+
+### Mobile Display Issues
+
+1. **Horizontal scrolling**: All layouts are now responsive and prevent horizontal overflow
+2. **Buttons too small**: All touch targets meet 44x44px minimum for accessibility
+3. **Sidebar stays open**: Sidebar now auto-closes on mobile after clicking any link
+4. **Can't find menu**: Look for the floating trigger button (panel icon) in the top-left when sidebar is closed
+5. **Text overflow**: Theme selector and buttons adapt to screen size; separate mobile layouts prevent overflow
 
 ## Contributing
 
