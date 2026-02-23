@@ -301,6 +301,7 @@
   max-width: 88%;
   z-index: 1;
   letter-spacing: -0.005em;
+  white-space: pre-wrap;
 }
 
 .fc-hint {
