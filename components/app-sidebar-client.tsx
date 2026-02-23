@@ -185,9 +185,14 @@ function SidebarCollapseButton() {
 /** Floating trigger when sidebar is collapsed (desktop AND mobile) */
 function FloatingTrigger() {
   const { state, toggleSidebar, open, isMobile, openMobile } = useSidebar();
+  const pathname = usePathname();
 
   // On mobile, check openMobile state; on desktop, check open/state
   const shouldShow = isMobile ? !openMobile : (state !== "expanded" && !open);
+
+  // Hide trigger in flashcard play mode to avoid overlap with back button
+  const isPlayRoute = pathname?.startsWith("/flashcards/play");
+  if (isPlayRoute && isMobile) return null;
 
   if (!shouldShow) return null;
 
