@@ -58,14 +58,14 @@ export default function DashboardPage() {
         {/* ── Header ────────────────────────────────────────── */}
         <header className="flex items-start justify-between gap-6 mb-10 pt-2">
           {/* Left — branding, stacked */}
-          <div>
+          <div className="min-w-0 flex-1">
             <h1
               className="text-2xl font-semibold tracking-tight"
               style={{ fontFamily: "var(--font-ibm-plex-sans), var(--font-geist-sans), system-ui" }}
             >
               DocuRepo
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5 truncate">
               {activeRepo ? (
                 <>{activeRepo.owner}<span className="mx-1 opacity-40">/</span>{activeRepo.name}</>
               ) : (
@@ -75,7 +75,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Right — buttons on top, shortcuts below */}
-          <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          <div className="hidden sm:flex flex-col items-end gap-2 flex-shrink-0">
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -100,7 +100,7 @@ export default function DashboardPage() {
                 Continue Reading
               </Button>
             </div>
-            <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/40">
+            <div className="flex items-center gap-3 text-[11px] text-muted-foreground/40">
               <span className="flex items-center gap-1">
                 <kbd className="inline-flex items-center justify-center w-[18px] h-[18px] rounded border border-border/50 text-[9px] font-mono leading-none">?</kbd>
                 Shortcuts
@@ -110,12 +110,38 @@ export default function DashboardPage() {
                 Palette
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="inline-flex items-center justify-center w-[18px] h-[18px] rounded border border-border/50 text-[9px] font-mono leading-none">R</kbd>
-                Random
+                <kbd className="inline-flex items-center justify-center w-[18px] h-[18px] rounded border border-border/50 text-[9px] font-mono leading-none">C</kbd>
+                Continue
               </span>
             </div>
           </div>
         </header>
+
+        {/* Mobile-only buttons */}
+        <div className="flex sm:hidden gap-2 mb-6">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs flex-1"
+            onClick={() => window.dispatchEvent(new CustomEvent("docurepo:open-search"))}
+          >
+            <Search className="w-3.5 h-3.5 mr-1.5" />
+            Search
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs flex-1"
+            onClick={() => {
+              const lastNote = recentNotes[0];
+              if (lastNote) router.push(`/notes/${lastNote.path}`);
+            }}
+            disabled={recentNotes.length === 0}
+          >
+            <Clock className="w-3.5 h-3.5 mr-1.5" />
+            Continue Reading
+          </Button>
+        </div>
 
         {/* ── Appearance ────────────────────────────────────── */}
         <section className="mb-10">

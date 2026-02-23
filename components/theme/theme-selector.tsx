@@ -338,11 +338,9 @@ export function ThemeSelector({ className }: { className?: string }) {
 
   return (
     <div className={className}>
-      {/* Two columns — forced with inline style so it always renders side-by-side */}
-      <div
-        className="gap-6"
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}
-      >
+      {/* Two columns on desktop, single column on mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
         {/* Left — Theme */}
         <div className="space-y-2 min-w-0">
           <label className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">

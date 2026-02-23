@@ -114,9 +114,13 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
       shortcut: "C",
       icon: <ArrowRight className="w-4 h-4" />,
       action: () => {
-          const lastNote = localStorage.getItem("docurepo:last_note");
-        if (lastNote) {
-          router.push(`/notes/${lastNote}`);
+        try {
+          const recentNotes = JSON.parse(localStorage.getItem("docurepo:recent_notes") || "[]");
+          if (recentNotes.length > 0) {
+            router.push(`/notes/${recentNotes[0].path}`);
+          }
+        } catch {
+          // Silently fail
         }
         close();
       },
@@ -151,7 +155,11 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   const filteredCommands = query
     ? commands.filter((cmd) => {
         const queryLower = query.toLowerCase();
-        // If query starts with "/", match against shortcuts
+        // Check if the query exactly matches a shortcut (case-insensitive)
+        if (cmd.shortcut?.toLowerCase() === queryLower) {
+          return true;
+        }
+        // If query starts with "/", only match against shortcuts
         if (queryLower.startsWith("/")) {
           return cmd.shortcut?.toLowerCase().startsWith(queryLower);
         }
@@ -230,9 +238,13 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         // Continue reading - C
         if (e.key === "c" || e.key === "C") {
           e.preventDefault();
-        const lastNote = localStorage.getItem("docurepo:last_note");
-          if (lastNote) {
-            router.push(`/notes/${lastNote}`);
+          try {
+            const recentNotes = JSON.parse(localStorage.getItem("docurepo:recent_notes") || "[]");
+            if (recentNotes.length > 0) {
+              router.push(`/notes/${recentNotes[0].path}`);
+            }
+          } catch {
+            // Silently fail
           }
           return;
         }
@@ -274,7 +286,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, open, close, filteredCommands, selectedIndex]);
+  }, [isOpen, open, close, filteredCommands, selectedIndex, getAllNotes, router, repos, setActiveRepo, query, findExactShortcutMatch]);
 
   // Reset selected index when query changes
   useEffect(() => {

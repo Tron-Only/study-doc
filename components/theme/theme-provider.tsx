@@ -456,7 +456,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const savedFontId = localStorage.getItem(STORAGE_KEYS.fontId);
       const savedCustomFonts = localStorage.getItem(STORAGE_KEYS.customFonts);
 
-      if (savedThemeId && THEMES.some((t) => t.id === savedThemeId)) setThemeIdState(savedThemeId);
+      // System theme detection: only applies if no saved theme exists
+      if (savedThemeId && THEMES.some((t) => t.id === savedThemeId)) {
+        setThemeIdState(savedThemeId);
+      } else {
+        // Detect system preference for dark/light mode
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const systemTheme = THEMES.find((t) => t.mode === (prefersDark ? "dark" : "light"));
+        if (systemTheme) setThemeIdState(systemTheme.id);
+      }
+
       if (savedFontSize) setFontSizeState(savedFontSize);
 
       let loadedCustom: FontDefinition[] = [];

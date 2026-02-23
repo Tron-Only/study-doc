@@ -329,3 +329,61 @@
 .code-copy-button:active {
   transform: scale(0.95);
 }
+
+/* ─── Mobile Responsive ─────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 1.5rem 1rem 4rem;
+    font-size: 15px;
+    max-width: 100%;
+  }
+
+  .markdown-body h1 {
+    font-size: 1.5em;
+  }
+
+  .markdown-body h2 {
+    font-size: 1.25em;
+  }
+
+  .markdown-body h3 {
+    font-size: 1.1em;
+  }
+
+  .markdown-body h4,
+  .markdown-body h5,
+  .markdown-body h6 {
+    font-size: 1em;
+  }
+
+  .markdown-body pre {
+    padding: 12px;
+    font-size: 13px;
+    overflow-x: auto;
+  }
+
+  .markdown-body code {
+    font-size: 0.85em;
+  }
+
+  .markdown-body table {
+    display: block;
+    overflow-x: auto;
+    font-size: 0.85em;
+  }
+
+  .markdown-body img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .code-block-header {
+    padding: 4px 12px;
+  }
+
+  .code-language {
+    font-size: 10px;
+  }
+}
+

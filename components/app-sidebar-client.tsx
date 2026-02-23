@@ -182,11 +182,14 @@ function SidebarCollapseButton() {
   );
 }
 
-/** Floating trigger when sidebar is collapsed */
+/** Floating trigger when sidebar is collapsed (desktop AND mobile) */
 function FloatingTrigger() {
-  const { state, toggleSidebar } = useSidebar();
+  const { state, toggleSidebar, open, isMobile, openMobile } = useSidebar();
 
-  if (state === "expanded") return null;
+  // On mobile, check openMobile state; on desktop, check open/state
+  const shouldShow = isMobile ? !openMobile : (state !== "expanded" && !open);
+
+  if (!shouldShow) return null;
 
   return (
     <Button
@@ -211,6 +214,7 @@ export default function AppSidebarClient({
 }: AppSidebarClientProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { isMobile, setOpenMobile } = useSidebar();
   const [nav, setNav] = useState<NavItem[] | undefined>(() => {
     if (navMain && Array.isArray(navMain) && navMain.length > 0) {
       return navMain;
@@ -218,6 +222,13 @@ export default function AppSidebarClient({
     return undefined;
   });
   const [isLoading, setIsLoading] = useState(true);
+
+  // Auto-close mobile sidebar when pathname changes
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [pathname, isMobile, setOpenMobile]);
 
   // Load persisted nav from localStorage
   useEffect(() => {
