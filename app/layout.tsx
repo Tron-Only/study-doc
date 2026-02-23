@@ -35,7 +35,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Study Doc",
+  title: "DocuRepo",
   description: "A platform for sharing and collaborating on study materials.",
 };
 

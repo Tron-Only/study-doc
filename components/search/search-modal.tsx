@@ -47,8 +47,8 @@ export function SearchModal() {
   // Listen for open event
   useEffect(() => {
     const handleOpen = () => open();
-    window.addEventListener("study-doc:open-search", handleOpen);
-    return () => window.removeEventListener("study-doc:open-search", handleOpen);
+    window.addEventListener("docurepo:open-search", handleOpen);
+    return () => window.removeEventListener("docurepo:open-search", handleOpen);
   }, [open]);
 
   // Search functionality

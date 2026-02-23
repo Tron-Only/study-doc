@@ -120,8 +120,8 @@ function ImageWithGitHubUrl(props: React.ComponentPropsWithoutRef<"img"> & { src
   const [repo, setRepo] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedOwner = localStorage.getItem("study-doc:repo_owner");
-    const storedRepo = localStorage.getItem("study-doc:repo_name");
+    const storedOwner = localStorage.getItem("docurepo:repo_owner");
+    const storedRepo = localStorage.getItem("docurepo:repo_name");
     if (storedOwner) setOwner(storedOwner);
     if (storedRepo) setRepo(storedRepo);
   }, []);
@@ -162,8 +162,8 @@ export default function MarkdownViewer({
         let r = repo;
 
         if (!o || !r) {
-          const storedOwner = localStorage.getItem("study-doc:repo_owner");
-          const storedRepo = localStorage.getItem("study-doc:repo_name");
+          const storedOwner = localStorage.getItem("docurepo:repo_owner");
+          const storedRepo = localStorage.getItem("docurepo:repo_name");
           o = o ?? storedOwner ?? undefined;
           r = r ?? storedRepo ?? undefined;
         }
@@ -232,15 +232,15 @@ function trackRecentNote(filePath: string, content: string) {
     };
 
     const existingNotes = JSON.parse(
-      localStorage.getItem("study-doc:recent_notes") || "[]"
+      localStorage.getItem("docurepo:recent_notes") || "[]"
     );
     const filteredNotes = existingNotes.filter(
       (note: { path: string }) => note.path !== filePath
     );
     const updatedNotes = [recentNote, ...filteredNotes].slice(0, 10);
 
-    localStorage.setItem("study-doc:recent_notes", JSON.stringify(updatedNotes));
-    window.dispatchEvent(new CustomEvent("study-doc:recent-notes-updated"));
+    localStorage.setItem("docurepo:recent_notes", JSON.stringify(updatedNotes));
+    window.dispatchEvent(new CustomEvent("docurepo:recent-notes-updated"));
   } catch {
     // Silently fail
   }

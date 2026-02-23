@@ -50,7 +50,7 @@ function PlayPageInner() {
     }
 
     try {
-      const token = localStorage.getItem("study-doc:token") ?? undefined;
+      const token = localStorage.getItem("docurepo:token") ?? undefined;
 
       if (mode === "unit") {
         // Find the deck path

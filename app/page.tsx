@@ -27,7 +27,7 @@ export default function DashboardPage() {
     
     const loadRecentNotes = () => {
       try {
-        const savedNotes = localStorage.getItem("study-doc:recent_notes");
+        const savedNotes = localStorage.getItem("docurepo:recent_notes");
         if (savedNotes) {
           setRecentNotes(JSON.parse(savedNotes));
         }
@@ -39,8 +39,8 @@ export default function DashboardPage() {
     loadRecentNotes();
 
     const handleNotesUpdated = () => loadRecentNotes();
-    window.addEventListener("study-doc:recent-notes-updated", handleNotesUpdated);
-    return () => window.removeEventListener("study-doc:recent-notes-updated", handleNotesUpdated);
+    window.addEventListener("docurepo:recent-notes-updated", handleNotesUpdated);
+    return () => window.removeEventListener("docurepo:recent-notes-updated", handleNotesUpdated);
   }, []);
 
   if (!mounted) {
@@ -63,7 +63,7 @@ export default function DashboardPage() {
               className="text-2xl font-semibold tracking-tight"
               style={{ fontFamily: "var(--font-ibm-plex-sans), var(--font-geist-sans), system-ui" }}
             >
-              Study Doc
+              DocuRepo
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               {activeRepo ? (
@@ -81,7 +81,7 @@ export default function DashboardPage() {
                 variant="outline"
                 size="sm"
                 className="text-xs"
-                onClick={() => window.dispatchEvent(new CustomEvent("study-doc:open-search"))}
+                onClick={() => window.dispatchEvent(new CustomEvent("docurepo:open-search"))}
               >
                 <Search className="w-3.5 h-3.5 mr-1.5" />
                 Search

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronRight, Folder, FileText, PanelLeftClose, PanelLeft, Home, Settings, Play } from "lucide-react";
+import { ChevronRight, Folder, FileText, PanelLeftClose, PanelLeft, BookOpen, Settings, Play } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -231,7 +231,7 @@ export default function AppSidebarClient({
     (async () => {
       // 1) Try to load persisted sidebar from localStorage
       try {
-        const raw = localStorage.getItem("study-doc:sidebar");
+        const raw = localStorage.getItem("docurepo:sidebar");
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
@@ -249,15 +249,15 @@ export default function AppSidebarClient({
 
       // 2) If no persisted sidebar, try to fetch the repo tree
       try {
-        const owner = localStorage.getItem("study-doc:repo_owner");
-        const repo = localStorage.getItem("study-doc:repo_name");
+        const owner = localStorage.getItem("docurepo:repo_owner");
+        const repo = localStorage.getItem("docurepo:repo_name");
         if (owner && repo) {
           try {
             const tree = await fetchRepoTree(owner, repo);
             if (Array.isArray(tree) && tree.length > 0) {
               const built = buildSidebar(tree as GitTreeEntry[]);
               try {
-                localStorage.setItem("study-doc:sidebar", JSON.stringify(built));
+                localStorage.setItem("docurepo:sidebar", JSON.stringify(built));
               } catch {
                 // ignore localStorage write errors
               }
@@ -296,7 +296,7 @@ export default function AppSidebarClient({
   // Refresh handler (reads persisted sidebar)
   const refreshFromStorage = useCallback(() => {
     try {
-      const raw = localStorage.getItem("study-doc:sidebar");
+      const raw = localStorage.getItem("docurepo:sidebar");
       if (!raw) {
         setNav([]);
         return;
@@ -321,10 +321,10 @@ export default function AppSidebarClient({
     const onStorage = (e: StorageEvent) => {
       const key = e.key;
       const triggerKeys = new Set([
-        "study-doc:sidebar",
-        "study-doc:repo",
-        "study-doc:repo_owner",
-        "study-doc:repo_name",
+        "docurepo:sidebar",
+        "docurepo:repo",
+        "docurepo:repo_owner",
+        "docurepo:repo_name",
       ]);
 
       if (!key) {
@@ -337,11 +337,11 @@ export default function AppSidebarClient({
       }
     };
 
-    window.addEventListener("study-doc:nav-updated", onNavUpdated);
+    window.addEventListener("docurepo:nav-updated", onNavUpdated);
     window.addEventListener("storage", onStorage);
 
     return () => {
-      window.removeEventListener("study-doc:nav-updated", onNavUpdated);
+      window.removeEventListener("docurepo:nav-updated", onNavUpdated);
       window.removeEventListener("storage", onStorage);
     };
   }, [refreshFromStorage]);
@@ -355,7 +355,7 @@ export default function AppSidebarClient({
 
   const handleAddRepo = () => {
     // Trigger the startup modal to show
-    window.dispatchEvent(new CustomEvent("study-doc:show-startup-modal"));
+    window.dispatchEvent(new CustomEvent("docurepo:show-startup-modal"));
   };
 
   return (
@@ -364,8 +364,8 @@ export default function AppSidebarClient({
         {/* Sidebar Header */}
         <div className="sidebar-header">
           <Link href="/" className="sidebar-header-link">
-            <Home className="sidebar-icon" size={18} />
-            <span className="sidebar-header-text">Study Doc</span>
+            <BookOpen className="sidebar-icon" size={18} />
+            <span className="sidebar-header-text">DocuRepo</span>
           </Link>
           <SidebarCollapseButton />
         </div>

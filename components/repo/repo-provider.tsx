@@ -31,8 +31,8 @@ interface RepoContextType {
 const RepoContext = createContext<RepoContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  repos: "study-doc:repos",
-  activeRepoId: "study-doc:active_repo_id",
+  repos: "docurepo:repos",
+  activeRepoId: "docurepo:active_repo_id",
 };
 
 export function RepoProvider({ children }: { children: React.ReactNode }) {
@@ -113,10 +113,10 @@ export function RepoProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(STORAGE_KEYS.activeRepoId, newRepo.id);
       
       // Also save sidebar for compatibility with existing code
-      localStorage.setItem("study-doc:sidebar", JSON.stringify(sidebar));
-      localStorage.setItem("study-doc:repo_owner", owner);
-      localStorage.setItem("study-doc:repo_name", name);
-      localStorage.setItem("study-doc:repo", url);
+      localStorage.setItem("docurepo:sidebar", JSON.stringify(sidebar));
+      localStorage.setItem("docurepo:repo_owner", owner);
+      localStorage.setItem("docurepo:repo_name", name);
+      localStorage.setItem("docurepo:repo", url);
       
     } finally {
       setIsLoading(false);
@@ -156,13 +156,13 @@ export function RepoProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem(STORAGE_KEYS.activeRepoId, id);
         
         // Update legacy localStorage for compatibility
-        localStorage.setItem("study-doc:sidebar", JSON.stringify(active.sidebar || []));
-        localStorage.setItem("study-doc:repo_owner", active.owner);
-        localStorage.setItem("study-doc:repo_name", active.name);
-        localStorage.setItem("study-doc:repo", active.url);
+        localStorage.setItem("docurepo:sidebar", JSON.stringify(active.sidebar || []));
+        localStorage.setItem("docurepo:repo_owner", active.owner);
+        localStorage.setItem("docurepo:repo_name", active.name);
+        localStorage.setItem("docurepo:repo", active.url);
         
         // Notify sidebar to refresh
-        window.dispatchEvent(new CustomEvent("study-doc:nav-updated"));
+        window.dispatchEvent(new CustomEvent("docurepo:nav-updated"));
       }
       
       return newRepos;
@@ -203,7 +203,7 @@ export function RepoProvider({ children }: { children: React.ReactNode }) {
           const updated = newRepos.find(r => r.id === id);
           if (updated) {
             setActiveRepoState(updated);
-            localStorage.setItem("study-doc:sidebar", JSON.stringify(sidebar));
+            localStorage.setItem("docurepo:sidebar", JSON.stringify(sidebar));
           }
         }
         

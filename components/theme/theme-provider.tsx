@@ -79,10 +79,10 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  themeId: "study-doc:theme_id",
-  fontSize: "study-doc:font_size",
-  fontId: "study-doc:font_id",
-  customFonts: "study-doc:custom_fonts",
+  themeId: "docurepo:theme_id",
+  fontSize: "docurepo:font_size",
+  fontId: "docurepo:font_id",
+  customFonts: "docurepo:custom_fonts",
 };
 
 // ─── Predefined Fonts ─────────────────────────────────────────
@@ -479,7 +479,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Inject <link> tags for custom Google Fonts
   useEffect(() => {
     // Clean up any previously injected font links
-    document.querySelectorAll("link[data-study-doc-font]").forEach((el) => el.remove());
+    document.querySelectorAll("link[data-docurepo-font]").forEach((el) => el.remove());
 
     for (const font of customFonts) {
       if (font.type === "custom" && font.stack.startsWith("__url:")) {
@@ -487,7 +487,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const link = document.createElement("link");
         link.rel = "stylesheet";
         link.href = url;
-        link.setAttribute("data-study-doc-font", font.id);
+        link.setAttribute("data-docurepo-font", font.id);
         document.head.appendChild(link);
       }
     }

@@ -21,7 +21,7 @@ export default function StartupModal() {
   const [open, setOpen] = useState<boolean>(true);
   const [url, setUrl] = useState<string>(() => {
     try {
-      return localStorage.getItem("study-doc:repo") || "";
+      return localStorage.getItem("docurepo:repo") || "";
     } catch {
       return "";
     }
@@ -36,8 +36,8 @@ export default function StartupModal() {
     const handleShowModal = () => {
       setOpen(true);
     };
-    window.addEventListener("study-doc:show-startup-modal", handleShowModal);
-    return () => window.removeEventListener("study-doc:show-startup-modal", handleShowModal);
+    window.addEventListener("docurepo:show-startup-modal", handleShowModal);
+    return () => window.removeEventListener("docurepo:show-startup-modal", handleShowModal);
   }, []);
 
   useEffect(() => {

@@ -12,7 +12,7 @@ import type { CardStats, CardRating, Flashcard } from "./flashcard-types";
 
 // ─── Constants ─────────────────────────────────────────────────
 
-const STORAGE_KEY = "study-doc:card-stats";
+const STORAGE_KEY = "docurepo:card-stats";
 const DEFAULT_EASE = 2.5;
 const MIN_EASE = 1.3;
 const DAY_MS = 86_400_000;

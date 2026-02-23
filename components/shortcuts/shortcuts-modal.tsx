@@ -24,8 +24,8 @@ export function ShortcutsModal() {
 
   useEffect(() => {
     const handleShow = () => setIsOpen(true);
-    window.addEventListener("study-doc:show-shortcuts", handleShow);
-    return () => window.removeEventListener("study-doc:show-shortcuts", handleShow);
+    window.addEventListener("docurepo:show-shortcuts", handleShow);
+    return () => window.removeEventListener("docurepo:show-shortcuts", handleShow);
   }, []);
 
   useEffect(() => {

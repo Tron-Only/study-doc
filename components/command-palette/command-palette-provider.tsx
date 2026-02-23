@@ -88,7 +88,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
       icon: <Search className="w-4 h-4" />,
       action: () => {
         // Will be handled by search modal
-        window.dispatchEvent(new CustomEvent("study-doc:open-search"));
+        window.dispatchEvent(new CustomEvent("docurepo:open-search"));
         close();
       },
       keywords: ["search", "find", "query"],
@@ -114,7 +114,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
       shortcut: "C",
       icon: <ArrowRight className="w-4 h-4" />,
       action: () => {
-        const lastNote = localStorage.getItem("study-doc:last_note");
+          const lastNote = localStorage.getItem("docurepo:last_note");
         if (lastNote) {
           router.push(`/notes/${lastNote}`);
         }
@@ -128,7 +128,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
       shortcut: "?",
       icon: <Command className="w-4 h-4" />,
       action: () => {
-        window.dispatchEvent(new CustomEvent("study-doc:show-shortcuts"));
+        window.dispatchEvent(new CustomEvent("docurepo:show-shortcuts"));
         close();
       },
       keywords: ["shortcuts", "keyboard", "help", "commands"],
@@ -181,7 +181,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
           return;
         }
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent("study-doc:show-shortcuts"));
+        window.dispatchEvent(new CustomEvent("docurepo:show-shortcuts"));
         return;
       }
 
@@ -230,7 +230,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         // Continue reading - C
         if (e.key === "c" || e.key === "C") {
           e.preventDefault();
-          const lastNote = localStorage.getItem("study-doc:last_note");
+        const lastNote = localStorage.getItem("docurepo:last_note");
           if (lastNote) {
             router.push(`/notes/${lastNote}`);
           }

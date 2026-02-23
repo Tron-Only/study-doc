@@ -59,7 +59,7 @@ function FlashcardsHubInner() {
 
     try {
       const { fetchRepoTree } = await import("@/lib/utils");
-      const token = localStorage.getItem("study-doc:token") ?? undefined;
+      const token = localStorage.getItem("docurepo:token") ?? undefined;
       const tree = await fetchRepoTree(activeRepo.owner, activeRepo.name, { token });
 
       const paths = extractFlashcardPaths(tree, folderPath);
