@@ -35,6 +35,8 @@ interface FlashcardDeckProps {
   /** Score so far (random mode) */
   score?: number;
   pointMultiplier?: number;
+  /** Show interval previews (for spaced repetition mode) */
+  showIntervals?: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────
@@ -46,16 +48,33 @@ export function FlashcardDeckPlayer({
   blindThreshold,
   score = 0,
   pointMultiplier = 1,
+  showIntervals = false,
 }: FlashcardDeckProps) {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [results, setResults] = useState<DeckResult[]>([]);
   const [animating, setAnimating] = useState(false);
+  const [showRatingInfo, setShowRatingInfo] = useState(() => {
+    // Show info on first flip if not in random mode and user hasn't seen it
+    if (blindLabel) return false; // Don't show in random mode
+    try {
+      return !localStorage.getItem("docurepo:rating-info-seen");
+    } catch {
+      return false;
+    }
+  });
 
   const currentCard = cards[index];
   const progress = index / cards.length;
   const correct = results.filter((r) => r.rating >= 3).length;
   const correctPct = results.length > 0 ? correct / results.length : 0;
+
+  const dismissRatingInfo = useCallback(() => {
+    setShowRatingInfo(false);
+    try {
+      localStorage.setItem("docurepo:rating-info-seen", "true");
+    } catch {}
+  }, []);
 
   // Keyboard: Space to flip, 1-4 to rate
   const handleRate = useCallback(
@@ -172,7 +191,45 @@ export function FlashcardDeckPlayer({
 
       {/* ── Rating buttons (shown after flip) ── */}
       {flipped && (
-        <div className="fc-ratings">
+        <>
+          {/* Rating info panel (first-time helper) */}
+          {showRatingInfo && (
+            <div className="fc-rating-info">
+              <div className="fc-rating-info-header">
+                <span className="fc-rating-info-title">How to Rate Cards</span>
+                <button 
+                  className="fc-rating-info-close"
+                  onClick={dismissRatingInfo}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="fc-rating-info-body">
+                <div className="fc-rating-info-item">
+                  <span className="fc-rating-info-label" style={{ color: RATING_COLORS[1] }}>Again</span>
+                  <span className="fc-rating-info-desc">Didn't remember — need to review soon</span>
+                </div>
+                <div className="fc-rating-info-item">
+                  <span className="fc-rating-info-label" style={{ color: RATING_COLORS[2] }}>Hard</span>
+                  <span className="fc-rating-info-desc">Struggled but got it — needs more practice</span>
+                </div>
+                <div className="fc-rating-info-item">
+                  <span className="fc-rating-info-label" style={{ color: RATING_COLORS[3] }}>Good</span>
+                  <span className="fc-rating-info-desc">Remembered correctly with some effort</span>
+                </div>
+                <div className="fc-rating-info-item">
+                  <span className="fc-rating-info-label" style={{ color: RATING_COLORS[4] }}>Easy</span>
+                  <span className="fc-rating-info-desc">Instantly knew the answer</span>
+                </div>
+                <p className="fc-rating-info-note">
+                  <strong>Scoring:</strong> "Good" and "Easy" count as correct. Your ratings help prioritize difficult cards.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="fc-ratings">
           {([1, 2, 3, 4] as CardRating[]).map((rating) => (
             <button
               key={rating}
@@ -185,12 +242,15 @@ export function FlashcardDeckPlayer({
               aria-label={`Rate ${RATING_LABELS[rating]}`}
             >
               <span className="fc-rating-label">{RATING_LABELS[rating]}</span>
-              <span className="fc-rating-interval">
-                {previewInterval(currentCard.id, rating)}
-              </span>
+              {showIntervals && (
+                <span className="fc-rating-interval">
+                  {previewInterval(currentCard.id, rating)}
+                </span>
+              )}
             </button>
           ))}
         </div>
+        </>
       )}
 
       {/* ── Keyboard hint ── */}

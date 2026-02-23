@@ -236,6 +236,7 @@ function PlayPageInner() {
           blindThreshold={blind?.threshold}
           score={score}
           pointMultiplier={blind?.pointMultiplier ?? 1}
+          showIntervals={mode === "random"}
         />
       </div>
     );
@@ -252,6 +253,9 @@ function PlayPageInner() {
           <div className="fc-results-label">
             {summary.correct} / {summary.total} correct · {deck?.title}
           </div>
+          <p className="fc-results-scoring-note">
+            <strong>Good</strong> and <strong>Easy</strong> count as correct
+          </p>
 
           <div className="fc-results-breakdown">
             {([1, 2, 3, 4] as CardRating[]).map((r) => {
