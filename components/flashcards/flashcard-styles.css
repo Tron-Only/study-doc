@@ -304,6 +304,12 @@
   white-space: pre-wrap;
 }
 
+/* Scale down text with newlines to fit within card */
+.fc-text-multiline {
+  font-size: clamp(0.8rem, 2vw, 0.95rem);
+  line-height: 1.5;
+}
+
 .fc-hint {
   position: absolute;
   bottom: 1rem;
@@ -1150,6 +1156,11 @@
   .fc-text {
     font-size: clamp(0.9rem, 4vw, 1.1rem);
     max-width: 95%;
+  }
+
+  .fc-text-multiline {
+    font-size: clamp(0.65rem, 2.8vw, 0.8rem);
+    line-height: 1.4;
   }
 
   .fc-suit {

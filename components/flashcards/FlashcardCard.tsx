@@ -27,6 +27,10 @@ export function FlashcardCard({ card, onFlip, flipped: controlledFlipped }: Flas
   const isFlipped = controlledFlipped !== undefined ? controlledFlipped : internalFlipped;
   const suit = getSuit(card.id);
 
+  // Check if question or answer contains newlines for scaling
+  const questionHasNewlines = card.question.includes('\n');
+  const answerHasNewlines = card.answer.includes('\n');
+
   const handleClick = () => {
     if (controlledFlipped === undefined) {
       const next = !internalFlipped;
@@ -51,7 +55,7 @@ export function FlashcardCard({ card, onFlip, flipped: controlledFlipped }: Flas
         <div className="fc-face fc-face-front">
           <span className="fc-suit">{suit}</span>
           <span className="fc-label">Question</span>
-          <p className="fc-text">{card.question}</p>
+          <p className={`fc-text${questionHasNewlines ? " fc-text-multiline" : ""}`}>{card.question}</p>
           <span className="fc-hint">
             <kbd>Space</kbd> to flip
           </span>
@@ -61,7 +65,7 @@ export function FlashcardCard({ card, onFlip, flipped: controlledFlipped }: Flas
         <div className="fc-face fc-face-back">
           <span className="fc-suit">{suit}</span>
           <span className="fc-label">Answer</span>
-          <p className="fc-text">{card.answer}</p>
+          <p className={`fc-text${answerHasNewlines ? " fc-text-multiline" : ""}`}>{card.answer}</p>
           <span className="fc-hint">Rate your recall below</span>
         </div>
       </div>
